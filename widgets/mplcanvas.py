@@ -88,3 +88,14 @@ class MplCanvasMapWithToolbar(QtWidgets.QWidget):
     
     def select_event(self, bool):
         self.mpl.select_event(bool)
+
+class MplCanvasBaseWithToolbar(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)
+
+        self.vlayout = QtWidgets.QVBoxLayout()
+        self.mpl = MplCanvasBase()
+        self.toolbar = NavigationToolbar2QT(self.mpl, self)
+        self.vlayout.addWidget(self.toolbar)
+        self.vlayout.addWidget(self.mpl)
+        self.setLayout(self.vlayout)

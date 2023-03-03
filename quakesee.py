@@ -30,22 +30,32 @@ class MainWindow(QtWidgets.QMainWindow):
         #Load the UI Page
         uic.loadUi('mainwindow.ui', self)
 
-        # variable
+        # variables
         self.configs = {
             "client events": "GFZ",
             "Mmin": 4,
             "waveform time": [2,200],
-            "search stations": ["?HZ", "[BHE]*"],
+            "search filter": ["?H?", "[BHE]*"],
             "geod reference": 'WGS84',
-            "search waveforms": ["*H*", "[BHE]*"],
             "show waveform component": 'Z',
         }
 
+        self.data = {
+            "events": None,
+            "selected event": None,
+            "stations": None,
+            "selected stations": None,
+            "waveforms": None
+        }
+
+        # temporary variables
+        self.__pass_inv = None
         self.stat_txts = []
         self.accepted_bulks = []
 
+
         # initial state
-        self.cv_distance.axes.figure.clf()
+        self.cv_distance.mpl.axes.figure.clf()
 
         kernel_dict = {
             "self":self
@@ -65,7 +75,6 @@ class MainWindow(QtWidgets.QMainWindow):
             lambda: self.show_events_in_mpl_2(self.mpl_select_map_plot.mpl))
         self.mpl_select_map_plot.mpl.communicate.sig[int].connect(
             lambda: get_ind(self.mpl_select_map_plot.mpl))
-        self.btn_showevents.clicked.connect(lambda: self.btn_rectangle.setChecked(False))
 
     def on_btn_map_reset(self):
         self.mpl_map_reset(self.mpl_select_map.mpl)
@@ -93,25 +102,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tab_code.setCurrentIndex(0)
 
     def show_events(self):
+        if self.worker != None:
+            self.worker.progress.emit("search events . . .\n")
+
         client = Client(self.configs["client events"])
         t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
         t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
         (minlon, maxlon), (minlat, maxlat) = self.mpl_select_map.mpl.data
-        self.cat = client.get_events(starttime=t1, endtime=t2, minmagnitude=self.configs["Mmin"], 
+        self.data["events"] = client.get_events(starttime=t1, endtime=t2, minmagnitude=self.configs["Mmin"], 
                                 minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
         x = []
         y = []
         m = []
         t = []
-        for event in self.cat:
+        for event in self.data["events"]:
             x.append(event.origins[0].longitude)
             y.append(event.origins[0].latitude)
             m.append(event.magnitudes[0].mag)
             t.append(event.origins[0].time.matplotlib_date)
         
+        if self.worker != None:
+            self.worker.progress.emit("plotting . . .\n")
 
         ax = self.mpl_select_map.mpl.axes
         ax.plot(x, y, 'ro', picker=10, clip_on=False)
+        self.mpl_select_map.mpl.draw()
 
         self.mpl_select_map_plot.mpl.axes.cla()
         ax = self.mpl_select_map_plot.mpl.axes
@@ -119,8 +134,27 @@ class MainWindow(QtWidgets.QMainWindow):
         ax.xaxis_date()
         ax.figure.autofmt_xdate()
         self.mpl_select_map_plot.mpl.draw()
-        # print(self.cat)
+        # print(self.data["events"])
 
+    def on_btn_show_events_clicked(self):
+        self.thread = QtCore.QThread()
+        self.worker = Worker(self.show_events)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(lambda: self.py_console._append_plain_text("finished!\n", True))
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.progress[str].connect(lambda x: self.py_console._append_plain_text(x, True))
+        self.thread.start()
+
+        # Final resets
+        self.btn_showevents.setEnabled(False)
+        self.thread.finished.connect(
+            lambda: self.btn_showevents.setEnabled(True)
+        )
+        self.thread.finished.connect(lambda: self.btn_rectangle.setChecked(False))
+        
     def on_btn_show_stations_clicked(self):
         self.thread = QtCore.QThread()
         self.worker = Worker(self.show_stations)
@@ -146,45 +180,35 @@ class MainWindow(QtWidgets.QMainWindow):
         t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
         t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
         (minlon, maxlon), (minlat, maxlat) = self.mpl_select_map_2.mpl.data
+
         if self.worker != None:
             self.worker.progress.emit("search stations . . .\n")
-        self.inv = client.get_stations(channel=self.configs["search stations"][0], starttime=t1,
-                                    endtime=t2,level="channel",
+
+        self.data["stations"] = client.get_stations(channel=self.configs["search filter"][0], starttime=t1,
+                                    endtime=t2,level="response",
                                     minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
-        self.inv = self.inv.select(channel=self.configs["search stations"][1])
+        self.data["stations"] = self.data["stations"].select(channel=self.configs["search filter"][1])
         
         x = []
         y = []
-        for net in self.inv:
-            for stat in net:
+        self.__pass_inv = dict()
+        __n = 0
+        for i, net in enumerate(self.data["stations"]):
+            for j, stat in enumerate(net):
                 x.append(stat._longitude)
                 y.append(stat._latitude)
+                self.__pass_inv[f"{__n}"] = [i,j]
+                __n += 1
 
-        # self.mpl_select_map_2.mpl.axes.cla()
-        # gdf_map = gpd.read_file('./coastlines/ne_110m_land.shp')
+
         ax = self.mpl_select_map_2.mpl.axes
-        # gdf_map.plot(ax=ax, clip_on=False)
-        # idx = self.mpl_select_map.mpl.ind
-        # ax.plot(self.cat[idx].origins[0].longitude,
-        #         self.cat[idx].origins[0].latitude,
-        #         'ro')
 
         self.stat_points = ax.scatter(x, y, c='k', s=80, marker='^', clip_on=False)
         if self.worker != None:
             self.worker.progress.emit("data being plotted . . .\n")
-        # # self.mpl_select_map_2.mpl.draw()
+
         self.stat_selector = SelectFromCollection(ax, self.stat_points)
         self.mpl_select_map_2.mpl.draw()
-
-        # np.random.seed(19680801)
-
-        # data = np.random.rand(100, 2)
-
-        # # subplot_kw = dict(xlim=(0, 1), ylim=(0, 1), autoscale_on=False)
-
-        # pts = ax.scatter(data[:, 0], data[:, 1], s=80)
-        # selector = SelectFromCollection(ax, pts)
-        # self.mpl_select_map_2.mpl.draw()
     
     def show_events_in_mpl_2(self, mpl):
         self.mpl_select_map_2.mpl.axes.cla()
@@ -194,8 +218,8 @@ class MainWindow(QtWidgets.QMainWindow):
         ax = self.mpl_select_map_2.mpl.axes
         # gdf_map.plot(ax=ax, clip_on=False)
         idx = mpl.ind
-        ax.plot(self.cat[idx].origins[0].longitude,
-                self.cat[idx].origins[0].latitude,
+        ax.plot(self.data["events"][idx].origins[0].longitude,
+                self.data["events"][idx].origins[0].latitude,
                 'ro', clip_on=False)
         self.mpl_select_map_2.mpl.draw()
 
@@ -209,9 +233,23 @@ class MainWindow(QtWidgets.QMainWindow):
         if bool == True:
             ax = self.mpl_select_map_2.mpl.axes
             self.stat_selector = SelectFromCollection(ax, self.stat_points)
+            self.stat_selector.communicate.sigEmpty.connect(self.__select_stations_by_indices)
+
         else:
             self.stat_selector.disconnect()
             self.mpl_select_map_2.mpl.draw()
+
+    def __select_stations_by_indices(self):
+        self.data["selected stations"] = None
+        for __n, idx in enumerate(self.stat_selector.ind):
+            i, j = self.__pass_inv[f"{idx}"]
+            inv_i = self.data["stations"][i][j]
+            net = self.data["stations"][i]._code
+            st = inv_i._code
+            if __n == 0:
+                self.data["selected stations"] = self.data["stations"].select(network=net, station=st)
+            else:
+                self.data["selected stations"].extend(self.data["stations"].select(network=net, station=st))
 
     def on_btn_get_waveforms_clicked(self):
         self.thread = QtCore.QThread()
@@ -235,36 +273,29 @@ class MainWindow(QtWidgets.QMainWindow):
         idx_event = self.ind_ev
         idx_stats = self.stat_selector.ind
 
-        pass_inv = dict()
-        n = 0
-        for i, net in enumerate(self.inv):
-            for j, stat in enumerate(net):
-                pass_inv[f"{n}"] = [i,j]
-                n += 1
-
-        curr_cat = self.cat[idx_event]
-        otime = curr_cat.origins[0].time
+        self.data["selected event"] = self.data["events"][idx_event]
+        otime = self.data["selected event"].origins[0].time
         t1 = otime - self.configs["waveform time"][0]
         t2 = otime + self.configs["waveform time"][1]
 
-        evlon = curr_cat.origins[0].longitude
-        evlat = curr_cat.origins[0].latitude
+        evlon = self.data["selected event"].origins[0].longitude
+        evlat = self.data["selected event"].origins[0].latitude
 
         bulk = []
         for idx in idx_stats:
-            i, j = pass_inv[f"{idx}"]
-            inv_i = self.inv[i][j]
-            net = self.inv[i]._code
+            i, j = self.__pass_inv[f"{idx}"]
+            inv_i = self.data["stations"][i][j]
+            net = self.data["stations"][i]._code
             st = inv_i._code
             lon = inv_i._longitude
             lat = inv_i._latitude
             _,_,dist = g.inv(evlon,evlat,lon,lat)
-            bulk.append((net,st, "*", self.configs["search waveforms"][0], t1, t2, dist, lon, lat, i, j))
+            bulk.append((net,st, "*", self.configs["search filter"][0], t1, t2, dist, lon, lat, i, j))
 
         # print(bulk)
         if self.worker != None:
             self.worker.progress.emit("search available waveforms . . .\n")
-        self.sts = None
+        self.data["waveforms"] = None
         self.accepted_bulks = []
         nn = 0
         for i_bl, bl in enumerate(bulk):
@@ -280,14 +311,14 @@ class MainWindow(QtWidgets.QMainWindow):
                     client = Client(cl)
                     st = client.get_waveforms(network=bl[0], station=bl[1], location=bl[2], channel=bl[3], 
                                               starttime=bl[4], endtime=bl[5])
-                    st = st.select(channel=self.configs["search waveforms"][1])
+                    st = st.select(channel=self.configs["search filter"][1])
                     if (len(st) != 0):
                         for tr in st:
                             tr.stats.distance = bl[6]
                         if nn == 0:
-                            self.sts = st
+                            self.data["waveforms"] = st
                         else:
-                            self.sts += st
+                            self.data["waveforms"] += st
                         nn += 1
                         if self.worker != None:
                             self.worker.progress.emit(f"net: {bl[0]}, st: {bl[1]}, client: {cl}, downloaded ({int(100*(i_bl+1)/len(bulk))}%)\n")
@@ -297,9 +328,9 @@ class MainWindow(QtWidgets.QMainWindow):
                     pass
 
     def show_waveforms(self):
-        fig = self.cv_distance.axes.figure
+        fig = self.cv_distance.mpl.axes.figure
         fig.clf()
-        stsel = self.sts.select(component=self.configs["show waveform component"])
+        stsel = self.data["waveforms"].select(component=self.configs["show waveform component"])
         stsel.detrend()
         # stsel.filter("highpass", freq=1.0)
         stsel.plot(type='section', recordlength=None,
@@ -309,7 +340,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for tr in stsel:
             ax.text(tr.stats.distance / 1e3, 1.0, tr.stats.station, rotation=270,
                     va="bottom", ha="center", transform=transform, zorder=10)
-        self.cv_distance.draw()
+        self.cv_distance.mpl.draw()
 
         if self.stat_txts != []:
             for txt in self.stat_txts:

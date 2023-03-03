@@ -2,6 +2,7 @@ import numpy as np
 
 from matplotlib.widgets import LassoSelector
 from matplotlib.path import Path
+from libs.utils import Communicate
 
 class SelectFromCollectionBase:
     def __init__(self, ax, collection, alpha_other=0.3):
@@ -39,6 +40,8 @@ class SelectFromCollection:
         self.collection = collection
         self.alpha_other = alpha_other
 
+        self.communicate = Communicate()
+
         self.xys = collection.get_offsets()
         self.Npts = len(self.xys)
 
@@ -61,6 +64,7 @@ class SelectFromCollection:
         self.fc[self.ind, -1] = 1
         self.collection.set_facecolors(self.fc)
         self.canvas.draw_idle()
+        self.communicate.sigEmpty.emit()
 
     def disconnect(self):
         self.lasso.disconnect_events()
