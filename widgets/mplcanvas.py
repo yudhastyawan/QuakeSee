@@ -77,6 +77,8 @@ class MplCanvasMapWithToolbar(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
 
         self.vlayout = QtWidgets.QVBoxLayout()
+        self.vlayout.setContentsMargins(0,0,0,0)
+        self.vlayout.setSpacing(0)
         self.mpl = MplCanvasMap()
         self.toolbar = NavigationToolbar2QT(self.mpl, self)
         self.vlayout.addWidget(self.toolbar)
@@ -94,6 +96,8 @@ class MplCanvasBaseWithToolbar(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
 
         self.vlayout = QtWidgets.QVBoxLayout()
+        self.vlayout.setContentsMargins(0,0,0,0)
+        self.vlayout.setSpacing(0)
         self.mpl = MplCanvasBase()
         self.toolbar = NavigationToolbar2QT(self.mpl, self)
         self.vlayout.addWidget(self.toolbar)
