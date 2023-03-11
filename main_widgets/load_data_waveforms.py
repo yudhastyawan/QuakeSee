@@ -117,6 +117,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.progress.connect(self._printLn)
+        # self.thread.setTerminationEnabled(True)
         self.thread.start()
 
         self.thread.finished.connect(
@@ -124,6 +125,11 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         )
         
         self.worker.finished.connect(lambda: self._printLn("finished!"))
+    
+    # def terminate_thread(self):
+    #     if self.thread != None:
+    #         self.thread.terminate()
+    #         self._printLn2("process is terminated.")
     
     def __show_waveplots(self):
         fig = self.tab_waveplots.widgetCanvas.mpl.axes.figure

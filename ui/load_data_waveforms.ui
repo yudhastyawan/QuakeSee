@@ -460,5 +460,6 @@
   <slot>_on_btn_apply_clicked()</slot>
   <slot>_on_btn_saveas_waveforms_clicked()</slot>
   <slot>_on_btn_saveas_stationxml_clicked()</slot>
+  <slot>terminate_thread()</slot>
  </slots>
 </ui>

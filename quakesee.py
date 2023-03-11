@@ -21,7 +21,8 @@ class MainWindow(QtWidgets.QMainWindow):
             "Utilities": [
                 ["Picking Phases (X)", None],
                 ["HVSR (X)", None],
-                ["Create OQ Inputs (X)", None]
+                ["Create OQ Inputs (X)", None],
+                ["Raspberry Shake (X)", None],
             ],
             "About": [
                 ["References", 1],
