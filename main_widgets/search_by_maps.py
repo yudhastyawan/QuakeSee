@@ -24,7 +24,7 @@ class SearchByMaps(QtWidgets.QWidget):
             "selected clients": list(URL_MAPPINGS.keys()),
             "client events": "GFZ",
             "Mmin": 4,
-            "waveform time": [2,200],
+            "waveform time": [-2,200],
             "search filter": ["?H?", "[BHE]*"],
             "geod reference": 'WGS84',
             "show waveform component": 'Z',
@@ -271,7 +271,7 @@ class SearchByMaps(QtWidgets.QWidget):
         g = Geod(ellps=self.configs["geod reference"])
 
         otime = self.data["selected event"].origins[0].time
-        t1 = otime - self.configs["waveform time"][0]
+        t1 = otime + self.configs["waveform time"][0]
         t2 = otime + self.configs["waveform time"][1]
 
         evlon = self.data["selected event"].origins[0].longitude

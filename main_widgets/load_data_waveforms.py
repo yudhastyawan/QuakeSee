@@ -46,6 +46,12 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 ["apply", "bool", None, None],
                 ["minfreq", "number", None, None],    
                 ["maxfreq", "number", None, None],
+            ],
+            "Time vs. Offsets": [
+                ["origin time", "bool", None, None],
+                ["velocity", "bool", None, None],
+                ["Vp (km/s)", "number", None, None],
+                ["Vs (km/s)", "number", None, None],
             ]
         }
 
@@ -57,10 +63,12 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         }
 
         self.data = {
+            "origin time": None,
             "event coordinate": [None, None],
             "waveforms": None,
             "selected waveforms": None,
             "stations": None,
+            "minimum starttime": None,
         }
 
         kernel_dict = {
@@ -82,6 +90,10 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.tab_time_offsets.mpl.axes.figure.clf()
 
         self.tab_code.hide()
+
+        ## set default parameter
+        self.tree_list["Time vs. Offsets"][2][3].setText("5.55")
+        self.tree_list["Time vs. Offsets"][3][3].setText("3.25")
 
     def run_kernel(self):
         self.py_console.run_kernel(self.py_editor.toPlainText())
@@ -125,6 +137,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             evlon, evlat = self.data["event coordinate"]
 
             selected_traces = []
+            starttimes = []
             for tr in self.data["waveforms"]:
                 net = tr.stats.network
                 stat = tr.stats.station
@@ -135,9 +148,11 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                     _,_,dist = g.inv(evlon,evlat,stlon,stlat)
                     tr.stats.distance = dist 
                     selected_traces.append(tr)
+                    starttimes.append(tr.stats.starttime)
             
             if selected_traces != []:
                 self.data["selected waveforms"] = ob.Stream(selected_traces)
+                self.data["minimum starttime"] = min(starttimes)
 
     def __search_stations(self):
         if self.data["waveforms"] != None:
@@ -235,6 +250,43 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             else:
                 self.__worker_progress("cannot filtering waveform data!")
 
+    def __customize_time_offsets(self):
+        fig = self.tab_time_offsets.mpl.axes.figure
+        ax = fig.axes[0]
+        _, xmax = ax.get_xlim()
+        if self.tree_list["Time vs. Offsets"][0][3].currentIndex() == 1:
+            self.__worker_progress("adding a line of origin time in Time vs. Offsets . . .")
+            self.data['origin time'] = ob.UTCDateTime(self.tree_list["Event"][0][3].dateTime().toPyDateTime())
+            delta_t = self.data['origin time'] - self.data['minimum starttime']
+            ax.plot([0, xmax], [delta_t, delta_t], c="blue", label='origin time')
+
+        if self.tree_list["Time vs. Offsets"][1][3].currentIndex() == 1:
+            self.__worker_progress("adding a line of velocity in Time vs. Offsets . . .")
+            self.data['origin time'] = ob.UTCDateTime(self.tree_list["Event"][0][3].dateTime().toPyDateTime())
+            delta_t = self.data['origin time'] - self.data['minimum starttime']
+            vs, vp = [None, None]
+            try:
+                vp = float(self.tree_list["Time vs. Offsets"][2][3].toPlainText())
+            except:
+                vp = None
+            try:
+                vs = float(self.tree_list["Time vs. Offsets"][3][3].toPlainText())
+            except:
+                vs = None
+            if vp != None and vs != None:
+                for v, c, l in zip([vp, vs], ["red", "green"], ["Vp", "Vs"]):
+                    tmax = delta_t + xmax / v
+                    ax.plot([0, xmax], [delta_t, tmax], c=c, label=l)
+            elif vp != None and vs == None:
+                tmax = delta_t + xmax / vp
+                ax.plot([0, xmax], [delta_t, tmax], c = "red", label="Vp")
+            elif vp == None and vs != None:
+                tmax = delta_t + xmax / vs
+                ax.plot([0, xmax], [delta_t, tmax], c = "green", label="Vs")
+            
+        ax.legend()
+        self.tab_time_offsets.mpl.draw()
+
     def _modify_waveforms(self):
         self.__worker_progress("reading waveform data . . .")
             
@@ -288,6 +340,9 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 if self.data["event coordinate"] != [None, None]:
                     self.__apply_distance_to_waves()
                     self.__show_waveform_offsets()
+                    self.__customize_time_offsets()
+                else:
+                    self.__worker_progress("the event coordinate is not found!")
     
     def __worker_progress(self, txt):
         if self.worker != None:

@@ -155,7 +155,7 @@
        </widget>
        <widget class="MplCanvasBaseWithToolbar" name="tab_time_offsets">
         <attribute name="title">
-         <string>Time vs.  Offsets (X)</string>
+         <string>Time vs.  Offsets</string>
         </attribute>
        </widget>
       </widget>
