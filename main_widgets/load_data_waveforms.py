@@ -18,6 +18,11 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             "Waveforms": [
                 ["path", "path", None, None, ("Open Waveforms", "", "MSEED Files (*.mseed *.sac *.SAC)")],
             ],
+            "Plot Options (X)": [
+                ["all waveforms", "bool", None, None],
+                ["time vs. offsets", "bool", None, None],
+                ["map", "bool", None, None],
+            ],
             "Event": [
                 ["datetime", "calendar", None, None],
                 ["longitude", "number", None, None],    
