@@ -52,6 +52,9 @@
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QPushButton" name="btn_apply">
          <property name="maximumSize">
@@ -73,9 +76,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QPushButton" name="btn_saveas_stationxml">
          <property name="text">
-          <string/>
+          <string>Save As StationXML</string>
          </property>
         </widget>
        </item>
@@ -435,10 +438,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_saveas_stationxml</sender>
+   <signal>clicked()</signal>
+   <receiver>load_data_waveforms</receiver>
+   <slot>_on_btn_saveas_stationxml_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>302</x>
+     <y>593</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>434</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>run_kernel()</slot>
   <slot>_on_btn_apply_clicked()</slot>
   <slot>_on_btn_saveas_waveforms_clicked()</slot>
+  <slot>_on_btn_saveas_stationxml_clicked()</slot>
  </slots>
 </ui>

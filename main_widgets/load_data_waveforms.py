@@ -349,9 +349,15 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             self.worker.progress.emit(txt)
 
     def _on_btn_saveas_waveforms_clicked(self):
-        self._modify_waveforms()
         fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Waveforms", "", "MSEED Files (*.mseed)")
         if fileName:
             if self.data["waveforms"] != None:
                 self.data["waveforms"].write(fileName, format="MSEED")
                 self._printLn2(f"saving waveform data to {fileName}")
+
+    def _on_btn_saveas_stationxml_clicked(self):
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Station XML", "", "XML Files (*.xml)")
+        if fileName:
+            if self.data["stations"] != None:
+                self.data["stations"].write(fileName, format="STATIONXML")
+                self._printLn2(f"saving station data to {fileName}")
