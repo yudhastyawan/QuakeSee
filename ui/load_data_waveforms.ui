@@ -153,7 +153,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab_time_offsets">
+       <widget class="MplCanvasBaseWithToolbar" name="tab_time_offsets">
         <attribute name="title">
          <string>Time vs.  Offsets (X)</string>
         </attribute>
@@ -360,6 +360,12 @@
    <class>PlotWaveforms</class>
    <extends>QWidget</extends>
    <header>widgets.plotwaveforms</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MplCanvasBaseWithToolbar</class>
+   <extends>QWidget</extends>
+   <header>widgets.mplcanvas</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

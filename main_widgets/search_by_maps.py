@@ -2,25 +2,14 @@ from PyQt5 import QtWidgets, uic, QtCore
 import sys
 import geopandas as gpd
 import obspy as ob
-import numpy as np
+from obspy.clients.fdsn.header import URL_MAPPINGS
 from obspy.clients.fdsn.client import Client
 from obspy.clients.fdsn import RoutingClient
 from pyproj import Geod
 from matplotlib.transforms import blended_transform_factory
 
 from libs.select_from_collection import SelectFromCollection
-
-class Worker(QtCore.QObject):
-    finished = QtCore.pyqtSignal()
-    progress = QtCore.pyqtSignal(str)
-
-    def __init__(self, func, parent = None):
-        QtCore.QObject.__init__(self, parent)
-        self.func = func
-    
-    def run(self):
-        self.func()
-        self.finished.emit()
+from libs.commons import Worker
 
 class SearchByMaps(QtWidgets.QWidget):
     def __init__(self, parent = None):
@@ -303,12 +292,7 @@ class SearchByMaps(QtWidgets.QWidget):
         nn = 0
         for i_bl, bl in enumerate(bulk):
             is_pass = False
-            for cl in ['AUSPASS', 'BGR', 'EIDA', 'ETH', 'EMSC', 'GEONET', 
-                       'GEOFON', 'GFZ', 'ICGC', 'IESDMC', 'INGV', 'IPGP', 
-                       'IRIS', 'IRISPH5', 'ISC', 'KNMI', 'KOERI', 'LMU', 
-                       'NCEDC', 'NIEP', 'NOA', 'ODC', 'ORFEUS', 'RESIF', 
-                       'RESIFPH5', 'RASPISHAKE', 'SCEDC', 'TEXNET', 'UIB-NORSAR', 
-                       'USGS', 'USP']:
+            for cl in URL_MAPPINGS.keys():
                 if is_pass == True: continue
                 try:
                     client = Client(cl)

@@ -33,7 +33,7 @@ class TreeWaveforms(QtWidgets.QTreeView):
                     tree_childs[0].setEditable(False)
                     txt[2] = tree_childs[1]
                     if txt[1] == "path":
-                        txt[3] = QTextAndButtonDialog()
+                        txt[3] = QTextAndButtonDialog(txt[4])
                     elif txt[1] == "bool":
                         txt[3] = QComboBool()
                     elif txt[1] == "calendar":
@@ -71,13 +71,15 @@ class QTextAndButton(QtWidgets.QWidget):
         lay.addLayout(vlay)
 
 class QTextAndButtonDialog(QTextAndButton):
-    def __init__(self, parent = None):
+    def __init__(self, args, parent = None):
         QTextAndButton.__init__(self, parent)
         self.button.setText("...")
         self.button.clicked.connect(self.on_btn_click)
 
+        self.args = args
+
     def on_btn_click(self):
-        fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Open Waveforms", "", "MSEED Files (*.mseed)")
+        fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, *self.args)
         if fileNames:
             self.text.setPlainText("\n".join(fileNames))
 

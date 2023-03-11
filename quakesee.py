@@ -15,7 +15,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 ["Search By Maps", 0],
                 ["Download ISC Catalogue (X)", None],
                 ["Load Data Waveforms", 4],
-                ["Load Data Stations (X)", None]
+                ["Load Data Stations (X)", None],
+                ["Continuous Data (X)", None]
             ],
             "Utilities": [
                 ["Picking Phases (X)", None],
