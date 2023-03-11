@@ -20,6 +20,8 @@ class SearchByMaps(QtWidgets.QWidget):
 
         # variables
         self.configs = {
+            "base clients": list(URL_MAPPINGS.keys()),
+            "selected clients": list(URL_MAPPINGS.keys()),
             "client events": "GFZ",
             "Mmin": 4,
             "waveform time": [2,200],
@@ -292,7 +294,7 @@ class SearchByMaps(QtWidgets.QWidget):
         nn = 0
         for i_bl, bl in enumerate(bulk):
             is_pass = False
-            for cl in URL_MAPPINGS.keys():
+            for cl in self.configs["selected clients"]:
                 if is_pass == True: continue
                 try:
                     client = Client(cl)

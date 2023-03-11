@@ -47,6 +47,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         }
 
         self.configs = {
+            "base clients": list(URL_MAPPINGS.keys()),
+            "selected clients": list(URL_MAPPINGS.keys()),
             "geod reference": 'WGS84',
             "show waveform component": 'Z',
         }
@@ -108,7 +110,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         fig.clf()
         if self.data["waveforms"] != None:
             len_waveforms = len(self.data["waveforms"])
-            self.data["waveforms"].plot(fig=fig)
+            self.data["waveforms"].plot(fig=fig, equal_scale=False)
             self.tab_waveplots.widgetCanvas.setMinimumSize(self.tab_waveplots.widgetCanvas.width(), 100*len_waveforms)
     
     def __apply_distance_to_waves(self):
@@ -150,7 +152,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 t2 = tr.stats.endtime
                 if stat not in check_station["stat"]:
                     is_pass = False
-                    for cl in URL_MAPPINGS.keys():
+                    for cl in self.configs["selected clients"]:
                         if is_pass == True: continue
                         try:
                             client = Client(cl)
