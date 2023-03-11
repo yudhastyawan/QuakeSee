@@ -35,11 +35,14 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 ["channel", "number", None, None],
                 ["component", "number", None, None],
             ],
-            "Precondition (X)": [
+            "Precondition": [
+                ["merge", "bool", None, None],
                 ["remove mean", "bool", None, None],
-                ["remove trend", "bool", None, None],
+                ["remove simple trend", "bool", None, None],
+                ["remove linear trend", "bool", None, None],
+                ["taper (0.05)", "bool", None, None],
             ],
-            "Filter (X)": [
+            "Filter": [
                 ["apply", "bool", None, None],
                 ["minfreq", "number", None, None],    
                 ["maxfreq", "number", None, None],
@@ -194,6 +197,44 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         else:
             self._printLn2("waveforms are not found.")
 
+    def __precondition_waveforms(self):
+        if self.tree_list["Precondition"][0][3].currentIndex() == 1:
+            self.__worker_progress("merging data . . .")
+            self.data["waveforms"].merge(method=1, interpolation_samples=-1, fill_value='interpolate')
+        if self.tree_list["Precondition"][1][3].currentIndex() == 1:
+            self.__worker_progress("removing mean on data . . .")
+            self.data["waveforms"].detrend(type='demean')
+        if self.tree_list["Precondition"][2][3].currentIndex() == 1:
+            self.__worker_progress("removing simple trend on data . . .")
+            self.data["waveforms"].detrend(type='simple')
+        if self.tree_list["Precondition"][3][3].currentIndex() == 1:
+            self.__worker_progress("removing linear trend on data . . .")
+            self.data["waveforms"].detrend(type='linear')
+        if self.tree_list["Precondition"][4][3].currentIndex() == 1:
+            self.__worker_progress("applying taper . . .")
+            self.data["waveforms"].taper(max_percentage=0.05)
+
+    def __filtering_waveforms(self):
+        if self.tree_list["Filter"][0][3].currentIndex() == 1:
+            self.__worker_progress("filtering waveform data . . .")
+            fmin, fmax = [None, None]
+            try:
+                fmin = float(self.tree_list["Filter"][1][3].toPlainText())
+            except:
+                fmin = None
+            try:
+                fmax = float(self.tree_list["Filter"][2][3].toPlainText())
+            except:
+                fmax = None
+            if fmin != None and fmax != None:
+                self.data["waveforms"].filter("bandpass", freqmin=fmin, freqmax=fmax)
+            elif fmin != None and fmax == None:
+                self.data["waveforms"].filter('highpass', freq=fmin)
+            elif fmin == None and fmax != None:
+                self.data["waveforms"].filter('lowpass', freq=fmax)
+            else:
+                self.__worker_progress("cannot filtering waveform data!")
+
     def _modify_waveforms(self):
         self.__worker_progress("reading waveform data . . .")
             
@@ -210,6 +251,10 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             self.data["waveforms"] = None
 
         if self.data["waveforms"] != None:
+            self.__precondition_waveforms()
+
+            self.__filtering_waveforms()
+
             self.__worker_progress("plotting waveform data . . .")
             self.__show_waveplots()
 
