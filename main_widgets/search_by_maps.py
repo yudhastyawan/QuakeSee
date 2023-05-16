@@ -52,7 +52,9 @@ class SearchByMaps(QtWidgets.QWidget):
         self.cv_distance.mpl.axes.figure.clf()
 
         kernel_dict = {
-            "self":self
+            "self":self,
+            "map_configs":self.configs,
+            "map_data":self.data
         }
 
         self.py_console.push_kernel(kernel_dict)

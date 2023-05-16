@@ -77,7 +77,9 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         }
 
         kernel_dict = {
-            "self":self
+            "self":self,
+            "wave_configs":self.configs,
+            "wave_data":self.data
         }
 
         self.thread = None
