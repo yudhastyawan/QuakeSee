@@ -13,6 +13,7 @@ class PyConsole(RichJupyterWidget):
         # Create an in-process kernel
         kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
+        kernel_manager.kernel.shell.banner1 = ""
         kernel = kernel_manager.kernel
         kernel.gui = 'qt'
 

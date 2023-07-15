@@ -25,10 +25,16 @@ class SearchByMaps(QtWidgets.QWidget):
             "client events": "GFZ",
             "Mmin": 4,
             "waveform time": [-2,200],
-            "search filter": ["?H?", "[BHE]*"],
+            "network filter": "*",
+            "station filter": "*",
+            # "search filter": ["?H?", "[BHE]*"],
+            "channel filter": "BH?,EH?,HH?",
             "geod reference": 'WGS84',
             "show waveform component": 'Z',
         }
+
+        # configs base
+        self.configs_base = self.configs.copy()
 
         self.data = {
             "events": None,
@@ -52,12 +58,13 @@ class SearchByMaps(QtWidgets.QWidget):
         self.cv_distance.mpl.axes.figure.clf()
 
         kernel_dict = {
-            "self":self,
+            "_map":self,
             "map_configs":self.configs,
-            "map_data":self.data
+            "map_data":self.data,
+            "map_configs_reset":self.reset_configs
         }
 
-        self.py_console.push_kernel(kernel_dict)
+        self._push_kernel = lambda: self.py_console.push_kernel(kernel_dict)
 
         self.ind_ev = 0
         def get_ind(mpl):
@@ -73,6 +80,10 @@ class SearchByMaps(QtWidgets.QWidget):
             lambda: self.show_events_in_mpl_2(self.mpl_select_map_plot.mpl))
         self.mpl_select_map_plot.mpl.communicate.sig[int].connect(
             lambda: get_ind(self.mpl_select_map_plot.mpl))
+        
+    def reset_configs(self):
+        for key in self.configs.keys():
+            self.configs[key] = self.configs_base[key]
 
     def _on_btn_map_reset(self):
         self.mpl_map_reset(self.mpl_select_map.mpl)
@@ -95,6 +106,10 @@ class SearchByMaps(QtWidgets.QWidget):
         gdf_map = gpd.read_file('./coastlines/ne_110m_land.shp')
         ax = mpl.axes
         gdf_map.plot(color='lightgrey', edgecolor='black', linewidth=1, ax=ax, clip_on=False)
+        mpl.axes.tick_params(axis="y",direction="in", pad=-22)
+        mpl.axes.tick_params(axis="x",direction="in", pad=-15)
+        mpl.axes.figure.tight_layout(pad=0, w_pad=0, h_pad=0)
+        mpl.axes.margins(0)
         mpl.draw()
 
     def run_kernel(self):
@@ -109,31 +124,37 @@ class SearchByMaps(QtWidgets.QWidget):
         t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
         t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
         (minlon, maxlon), (minlat, maxlat) = self.mpl_select_map.mpl.data
-        self.data["events"] = client.get_events(starttime=t1, endtime=t2, minmagnitude=self.configs["Mmin"], 
-                                minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
-        x = []
-        y = []
-        m = []
-        t = []
-        for event in self.data["events"]:
-            x.append(event.origins[0].longitude)
-            y.append(event.origins[0].latitude)
-            m.append(event.magnitudes[0].mag)
-            t.append(event.origins[0].time.matplotlib_date)
-        
-        if self.worker != None:
-            self.worker.progress.emit("plotting . . .")
+        try:
+            self.data["events"] = client.get_events(starttime=t1, endtime=t2, minmagnitude=self.configs["Mmin"], 
+                                    minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
+            x = []
+            y = []
+            m = []
+            t = []
+            for event in self.data["events"]:
+                x.append(event.origins[0].longitude)
+                y.append(event.origins[0].latitude)
+                m.append(event.magnitudes[0].mag)
+                t.append(event.origins[0].time.matplotlib_date)
+            
+            if self.worker != None:
+                self.worker.progress.emit("plotting . . .")
 
-        ax = self.mpl_select_map.mpl.axes
-        ax.plot(x, y, 'ro', picker=10, clip_on=False)
-        self.mpl_select_map.mpl.draw()
+            ax = self.mpl_select_map.mpl.axes
+            ax.plot(x, y, 'ro', picker=10, clip_on=False)
+            self.mpl_select_map.mpl.draw()
 
-        self.mpl_select_map_plot.mpl.axes.cla()
-        ax = self.mpl_select_map_plot.mpl.axes
-        ax.plot(t, m, 'ro', picker=10, clip_on=False)
-        ax.xaxis_date()
-        ax.figure.autofmt_xdate()
-        self.mpl_select_map_plot.mpl.draw()
+            self.mpl_select_map_plot.mpl.axes.cla()
+            ax = self.mpl_select_map_plot.mpl.axes
+            ax.plot(t, m, 'ro', picker=10, clip_on=False)
+            ax.xaxis_date()
+            ax.figure.autofmt_xdate()
+            ax.set_ylabel("Magnitude")
+            ax.set_xlabel("Time")
+            self.mpl_select_map_plot.mpl.draw()
+        except:
+            if self.worker != None:
+                self.worker.progress.emit("error during the process!")
         # print(self.data["events"])
 
     def _on_btn_show_events_clicked(self):
@@ -184,10 +205,10 @@ class SearchByMaps(QtWidgets.QWidget):
         if self.worker != None:
             self.worker.progress.emit("\nsearch stations . . .")
 
-        self.data["stations"] = client.get_stations(channel=self.configs["search filter"][0], starttime=t1,
+        self.data["stations"] = client.get_stations(network=self.configs["network filter"], channel=self.configs["channel filter"], starttime=t1,
                                     endtime=t2,level="response",
                                     minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
-        self.data["stations"] = self.data["stations"].select(channel=self.configs["search filter"][1])
+        # self.data["stations"] = self.data["stations"].select(network=self.configs["network filter"], channel=self.configs["channel filter"][1])
         self.data["selected stations"] = self.data["stations"]
         
         x = []
@@ -287,7 +308,7 @@ class SearchByMaps(QtWidgets.QWidget):
                 lon = stat._longitude
                 lat = stat._latitude
                 _,_,dist = g.inv(evlon,evlat,lon,lat)
-                bulk.append((net_code,st_code, "*", self.configs["search filter"][0], t1, t2, dist, lon, lat))
+                bulk.append((net_code,st_code, "*", self.configs["channel filter"], t1, t2, dist, lon, lat))
 
         if self.worker != None:
             self.worker.progress.emit("\nsearch available waveforms . . .")
@@ -302,7 +323,7 @@ class SearchByMaps(QtWidgets.QWidget):
                     client = Client(cl)
                     st = client.get_waveforms(network=bl[0], station=bl[1], location=bl[2], channel=bl[3], 
                                               starttime=bl[4], endtime=bl[5])
-                    st = st.select(channel=self.configs["search filter"][1])
+                    # st = st.select(channel=self.configs["channel filter"][1])
                     if (len(st) != 0):
                         for tr in st:
                             tr.stats.distance = bl[6]

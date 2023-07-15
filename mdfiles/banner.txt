@@ -1,0 +1,18 @@
+call:
+    map_configs
+    map_data
+    wave_configs
+    wave_data
+
+Show available params from a call:
+    call.keys()
+
+See a particular param:
+    call[param]
+
+Change a certain param:
+    call[param] = args
+
+Reset the configs:
+    [map/wave]_configs_reset()
+

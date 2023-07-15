@@ -14,8 +14,11 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         #Load the UI Page
         uic.loadUi('./ui/load_data_waveforms.ui', self)
 
+        # modify UI
+        self.wid_options.hide()
+
         self.tree_list = {
-            "Waveforms": [
+            "Waveform Location": [
                 ["path", "path", None, None, ("Open Waveforms", "", "MSEED Files (*.mseed *.sac *.SAC)")],
             ],
             "Plot Options (X)": [
@@ -67,6 +70,9 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             "show waveform component": 'Z',
         }
 
+        # configs base
+        self.configs_base = self.configs.copy()
+
         self.data = {
             "origin time": None,
             "event coordinate": [None, None],
@@ -77,15 +83,16 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         }
 
         kernel_dict = {
-            "self":self,
+            "_wave":self,
             "wave_configs":self.configs,
-            "wave_data":self.data
+            "wave_data":self.data,
+            "wave_configs_reset":self.reset_configs
         }
 
         self.thread = None
         self.worker = None
 
-        self.py_console.push_kernel(kernel_dict)
+        self._push_kernel = lambda: self.py_console.push_kernel(kernel_dict)
 
         self._print = lambda x: self.py_console._append_plain_text(x, True)
         self._printLn = lambda x: self._print(x + "\n")
@@ -96,17 +103,20 @@ class LoadDataWaveforms(QtWidgets.QWidget):
 
         self.tab_time_offsets.mpl.axes.figure.clf()
 
-        self.tab_code.hide()
-
         ## set default parameter
         self.tree_list["Time vs. Offsets"][2][3].setText("5.55")
         self.tree_list["Time vs. Offsets"][3][3].setText("3.25")
+
+    def reset_configs(self):
+        for key in self.configs.keys():
+            self.configs[key] = self.configs_base[key]
 
     def run_kernel(self):
         self.py_console.run_kernel(self.py_editor.toPlainText())
         self.tab_code.setCurrentIndex(0)
 
     def _on_btn_apply_clicked(self):
+        self.pbar_apply.setValue(0)
         self.btn_apply.setEnabled(False)
         self.tab_time_offsets.mpl.axes.figure.clf()
         self.tab_time_offsets.mpl.draw()
@@ -119,6 +129,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.progress.connect(self._printLn)
+        self.worker.progress_int.connect(self.pbar_apply.setValue)
         # self.thread.setTerminationEnabled(True)
         self.thread.start()
 
@@ -126,20 +137,41 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             lambda: self.btn_apply.setEnabled(True)
         )
         
+        # self.worker.finished.connect(lambda: self.__show_waveplots())
         self.worker.finished.connect(lambda: self._printLn("finished!"))
+        self.worker.finished.connect(lambda: self.__update_mpl_to_tight(self.tab_waveplots.widgetCanvas.mpl))
+        self.worker.finished.connect(lambda: self.pbar_apply.setValue(100))
     
     # def terminate_thread(self):
     #     if self.thread != None:
     #         self.thread.terminate()
     #         self._printLn2("process is terminated.")
+
+    def __update_mpl_to_tight(self, mpl):
+        if self.data["waveforms"] != None:
+            fig = mpl.axes.figure
+            fig.tight_layout(pad=0,w_pad=0)
+            fig.subplots_adjust(wspace=0, hspace=0)
+            mpl.draw()
+
+    def _on_btn_resize_clicked(self):
+        if self.data["waveforms"] != None:
+            len_waveforms = len(self.data["waveforms"])
+            mult = int(self.text_resize.text())
+            self.tab_waveplots.widgetCanvas.setMinimumSize(self.tab_waveplots.widgetCanvas.width(), mult*len_waveforms)
     
     def __show_waveplots(self):
         fig = self.tab_waveplots.widgetCanvas.mpl.axes.figure
+        mpl = self.tab_waveplots.widgetCanvas.mpl
         fig.clf()
         if self.data["waveforms"] != None:
             len_waveforms = len(self.data["waveforms"])
             self.data["waveforms"].plot(fig=fig, equal_scale=False)
             self.tab_waveplots.widgetCanvas.setMinimumSize(self.tab_waveplots.widgetCanvas.width(), 100*len_waveforms)
+            # for ax in fig.axes: ax.tick_params(axis="y",direction="in", pad=-22)
+            for ax in fig.axes: ax.ticklabel_format(axis='y',style='sci', scilimits=(0,0))
+            for ax in fig.axes: ax.margins(0)
+            mpl.draw()
     
     def __apply_distance_to_waves(self):
         self.__worker_progress("getting distances  . . .")
@@ -302,6 +334,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
 
     def _modify_waveforms(self):
         self.__worker_progress("reading waveform data . . .")
+        self.worker.progress_int.emit(10)
             
         fileNames = self.tree_list['Waveforms'][0][3].text.toPlainText()
         self.__worker_progress(fileNames)
@@ -317,11 +350,14 @@ class LoadDataWaveforms(QtWidgets.QWidget):
 
         if self.data["waveforms"] != None:
             self.__precondition_waveforms()
+            self.worker.progress_int.emit(20)
 
             self.__filtering_waveforms()
+            self.worker.progress_int.emit(40)
 
             self.__worker_progress("plotting waveform data . . .")
             self.__show_waveplots()
+            self.worker.progress_int.emit(60)
 
             if self.tree_list["Stations"][0][3].currentIndex() == 1:
                 self.__search_stations()
@@ -339,6 +375,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                     except:
                         self.__worker_progress("The stations cannot be load.")
                         self.data["stations"] = None
+
+            self.worker.progress_int.emit(80)
 
             if self.tree_list["Stations"][2][3].currentIndex() == 1:
                 self.data["event coordinate"] = [None, None]

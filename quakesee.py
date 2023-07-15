@@ -6,16 +6,31 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
-        #Load the UI Page
+        # Load the UI Page
         uic.loadUi('./ui/main_window.ui', self)
+
+        # modify ui
+        self.centralwidget.hide()
+        self.tabifyDockWidget(self.dock_editor, self.dock_console)
+
+        # Console
+        with open("mdfiles/banner.txt") as f:
+            banner = f.read()
+        self.py_console.banner = banner
+        self.search_by_maps.py_console = self.py_console
+        self.search_by_maps.py_editor = self.py_editor
+        self.load_data_waveforms.py_console = self.py_console
+        self.load_data_waveforms.py_editor = self.py_editor
+        self.search_by_maps._push_kernel()
+        self.load_data_waveforms._push_kernel()
 
         # variables
         self.tree_list = {
             "Data" : [
                 ["Search By Maps", 0],
                 ["Download ISC Catalogue (X)", None],
-                ["Load Data Waveforms", 4],
-                ["Load Data Stations (X)", None],
+                ["Load Waveform Data", 4],
+                ["Load Station Data (X)", None],
                 ["Continuous Data (X)", None]
             ],
             "Utilities": [
@@ -46,6 +61,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.about_thisprogram.filename = "./mdfiles/thisprogram.md"
         self.about_thisprogram.get_markdown()
+
+    def run_kernel(self):
+        self.py_console.run_kernel(self.py_editor.toPlainText())
+        self.dock_console.raise_()
 
 
 def main():

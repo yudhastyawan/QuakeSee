@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>QuakeSee</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="TreeOptions" name="tree_options">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="tabKeyNavigation">
+       <bool>false</bool>
+      </property>
+      <attribute name="headerVisible">
+       <bool>false</bool>
+      </attribute>
+     </widget>
+    </item>
+    <item>
+     <widget class="QStackedWidget" name="stacked_main">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="currentIndex">
+       <number>4</number>
+      </property>
+      <widget class="SearchByMaps" name="search_by_maps"/>
+      <widget class="About" name="about_references"/>
+      <widget class="About" name="about_howtocontribute"/>
+      <widget class="About" name="about_thisprogram"/>
+      <widget class="LoadDataWaveforms" name="load_data_waveforms"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SearchByMaps</class>
+   <extends>QWidget</extends>
+   <header>main_widgets.search_by_maps</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TreeOptions</class>
+   <extends>QTreeView</extends>
+   <header>widgets.treeoptions</header>
+  </customwidget>
+  <customwidget>
+   <class>About</class>
+   <extends>QWidget</extends>
+   <header>widgets.about</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LoadDataWaveforms</class>
+   <extends>QWidget</extends>
+   <header>main_widgets.load_data_waveforms</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

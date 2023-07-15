@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1312</width>
+    <width>1288</width>
     <height>657</height>
    </rect>
   </property>
@@ -378,9 +378,79 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_show_waves">
+     </widget>
+     <widget class="QTabWidget" name="tab_code">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_console">
        <attribute name="title">
-        <string>Show Waves</string>
+        <string>Python Console</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="btn_reset">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="PyConsole" name="py_console" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_editor">
+       <attribute name="title">
+        <string>Code Editor</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <property name="spacing">
@@ -399,29 +469,81 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="MplCanvasBaseWithToolbar" name="cv_distance" native="true">
+         <widget class="CodeEditor" name="py_editor" native="true">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="minimumSize">
-           <size>
-            <width>400</width>
-            <height>400</height>
-           </size>
-          </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="btn_run">
+            <property name="text">
+             <string>Run</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
      </widget>
     </widget>
    </item>
+   <item>
+    <widget class="MplCanvasBaseWithToolbar" name="cv_distance" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>400</width>
+       <height>400</height>
+      </size>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>PyConsole</class>
+   <extends>QWidget</extends>
+   <header>widgets.pyconsole</header>
+   <container>1</container>
+   <slots>
+    <slot>reset_kernel()</slot>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>CodeEditor</class>
+   <extends>QWidget</extends>
+   <header>widgets.codeeditor</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>MplCanvasMapWithToolbar</class>
    <extends>QWidget</extends>
@@ -539,6 +661,38 @@
     <hint type="destinationlabel">
      <x>440</x>
      <y>164</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_run</sender>
+   <signal>clicked()</signal>
+   <receiver>search_by_maps</receiver>
+   <slot>run_kernel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>52</x>
+     <y>407</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_reset</sender>
+   <signal>clicked()</signal>
+   <receiver>py_console</receiver>
+   <slot>reset_kernel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>41</x>
+     <y>398</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>440</x>
+     <y>534</y>
     </hint>
    </hints>
   </connection>
