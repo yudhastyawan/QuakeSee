@@ -1,3 +1,9 @@
+"""
+Author: Yudha Styawan
+
+Feel free to use this program, thank you!
+"""
+
 from PyQt5 import QtWidgets, uic, QtCore
 import sys
 
