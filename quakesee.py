@@ -9,14 +9,18 @@ class MainWindow(QtWidgets.QMainWindow):
         # Load the UI Page
         uic.loadUi('./ui/main_window.ui', self)
 
-        # modify ui
+        # Modify ui
+        # - we do not use central widget
         self.centralwidget.hide()
+        # - editor and console should be grouped into a tab
         self.tabifyDockWidget(self.dock_editor, self.dock_console)
 
         # Console
+        # - read text banner that would be shown in the python console
         with open("mdfiles/banner.txt") as f:
             banner = f.read()
         self.py_console.banner = banner
+        # - each window console need to be connected to the main console -> push kernel
         self.search_by_maps.py_console = self.py_console
         self.search_by_maps.py_editor = self.py_editor
         self.load_data_waveforms.py_console = self.py_console
@@ -24,7 +28,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.search_by_maps._push_kernel()
         self.load_data_waveforms._push_kernel()
 
-        # variables
+        # Generate the main tree list
+        # - (X) denotes the unimplemented features
+        # - the second element of each list represents the location within the main stack widget
         self.tree_list = {
             "Data" : [
                 ["Search By Maps", 0],
@@ -34,7 +40,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 ["Continuous Data (X)", None]
             ],
             "Utilities": [
-                ["Picking Phases (X)", None],
                 ["HVSR (X)", None],
                 ["Create OQ Inputs (X)", None],
                 ["Raspberry Shake (X)", None],
@@ -46,19 +51,24 @@ class MainWindow(QtWidgets.QMainWindow):
             ]
         }
 
+        # Set the current location of the main stack widget
         self.stacked_main.setCurrentIndex(0)
 
+        # Settings of the tree options (treeoptions.py)
         self.tree_options.tree_list = self.tree_list
         self.tree_options.print = lambda x: self.search_by_maps.py_console._append_plain_text(x, True)
         self.tree_options.setStackedIndex = self.stacked_main.setCurrentIndex
         self.tree_options.input_to_tree_model()
 
+        # References
         self.about_references.filename = "./mdfiles/references.md"
         self.about_references.get_markdown()
 
+        # How to Contribute
         self.about_howtocontribute.filename = "./mdfiles/howtocontribute.md"
         self.about_howtocontribute.get_markdown()
 
+        # About This Program
         self.about_thisprogram.filename = "./mdfiles/thisprogram.md"
         self.about_thisprogram.get_markdown()
 

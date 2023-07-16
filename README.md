@@ -17,7 +17,7 @@ Install the reqired packages in `requirements.txt` and run `quakesee.py` in your
 - [ ] Add a utility to plot station/inventory responses
 - [ ] Add a utility to conduct HVSR analysis
 - [ ] Add a utility to prepare Openquake inputs such as declustering, delimiting data based on sources, a-b values
-- [ ] Add a utility to pick phases on loaded waveform data
+- [x] Add a utility to pick phases on loaded waveform data
 - [ ] Add a utility to download and view from raspberry shake seismometers/accelerometers.
 
 ## Gallery

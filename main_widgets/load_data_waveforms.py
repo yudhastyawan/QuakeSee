@@ -2,10 +2,15 @@ from PyQt5 import QtWidgets, uic, QtCore
 import obspy as ob
 import os
 from libs.commons import Worker
+from libs.utils import TableModel
+from widgets.mplcanvas import MplCanvasBaseWithToolbar
 from obspy.clients.fdsn.header import URL_MAPPINGS
 from obspy.clients.fdsn.client import Client
 from pyproj import Geod
 from matplotlib.transforms import blended_transform_factory
+import pandas as pd
+import numpy as np
+import matplotlib as mpl
 
 class LoadDataWaveforms(QtWidgets.QWidget):
     def __init__(self, parent = None):
@@ -20,11 +25,12 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.tree_list = {
             "Waveform Location": [
                 ["path", "path", None, None, ("Open Waveforms", "", "MSEED Files (*.mseed *.sac *.SAC)")],
+                ["load", "bool", None, None],
             ],
-            "Plot Options (X)": [
+            "Plot Options": [
                 ["all waveforms", "bool", None, None],
                 ["time vs. offsets", "bool", None, None],
-                ["map", "bool", None, None],
+                ["map (X)", "bool", None, None],
             ],
             "Event": [
                 ["datetime", "calendar", None, None],
@@ -36,10 +42,11 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 ["path", "path", None, None, ("Open Stations", "", "XML Files (*.xml)")],
                 ["distance", "bool", None, None],
             ],
-            "Selection (X)": [
+            "Selection": [
                 ["apply", "bool", None, None],
                 ["network", "number", None, None],    
                 ["station", "number", None, None],
+                ["location", "number", None, None],
                 ["channel", "number", None, None],
                 ["component", "number", None, None],
             ],
@@ -89,6 +96,12 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             "wave_configs_reset":self.reset_configs
         }
 
+        self.__new_windows = []
+        self.__selected_event = None
+        self.__plot_rows = None
+        self.__wave_df = None
+        self.__phase_df = None
+
         self.thread = None
         self.worker = None
 
@@ -106,6 +119,71 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         ## set default parameter
         self.tree_list["Time vs. Offsets"][2][3].setText("5.55")
         self.tree_list["Time vs. Offsets"][3][3].setText("3.25")
+        self.tree_list["Selection"][1][3].setText("*")
+        self.tree_list["Selection"][2][3].setText("*")
+        self.tree_list["Selection"][3][3].setText("*")
+        self.tree_list["Selection"][4][3].setText("*")
+        self.tree_list["Selection"][5][3].setText("*")
+        self.tree_list["Waveform Location"][1][3].setCurrentIndex(1)
+
+    def __set_table_waves(self):
+        data = {"network":[], "station":[], "location":[], "channel":[], "starttime":[], "endtime":[],
+                "sampling_rate":[], "delta":[], "npts":[], "calib":[], "_format":[]}
+        for tr in self.data["waveforms"]:
+            data = {key: value + [tr.stats.__dict__[key]] for key, value in data.items()}
+        self.__wave_df = pd.DataFrame.from_dict(data)
+        self.__table_model = TableModel(self.__wave_df)
+        self.table_waves.setModel(self.__table_model)
+        self.table_waves.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_waves.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+
+    def __set_table_phase(self):
+        data_phase = {"network":[], "station":[], "location":[]}
+        P = []
+        S = []
+        check = ""
+        for tr in self.__base_waveforms:
+            if check != "".join([tr.stats.__dict__[key] for key in ["network", "station", "location"]]):
+                data_phase = {key: data_phase[key] + [tr.stats.__dict__[key]] for key in ["network", "station", "location"]}
+                P.append(np.nan)
+                S.append(np.nan)
+            check = "".join([tr.stats.__dict__[key] for key in ["network", "station", "location"]])
+        data_phase["P"] = P
+        data_phase["S"] = S
+        self.__phase_df = pd.DataFrame.from_dict(data_phase)
+        self.__table_phase_model = TableModel(self.__phase_df)
+        self.table_phase.setModel(self.__table_phase_model)
+        self.table_phase.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_phase.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+
+    def contextMenuEvent(self, event):
+        self.menu = QtWidgets.QMenu(self.table_waves)
+        self.plot_menu = self.menu.addAction("Plot")
+        self.plot_menu.triggered.connect(self.__on_plot_menu_clicked)
+        self.plot_new_window_menu = self.menu.addAction("Plot in A New Window")
+        self.plot_new_window_menu.triggered.connect(self.__on_plot_menu_new_window_clicked)
+        self.menu.exec_(event.globalPos())
+
+    def __on_plot_menu_clicked(self):
+        self.__plot_rows = [idx.row() for idx in self.table_waves.selectionModel().selectedRows()]
+        self.__st = ob.Stream([self.data["waveforms"].traces[i] for i in self.__plot_rows])
+        self.__show_waveplots(self.tab_waveplots.widgetCanvas.mpl, self.__st)
+        self.__update_mpl_to_tight(self.tab_waveplots.widgetCanvas.mpl)
+
+    def _on_btn_clear_windows_clicked(self):
+        if self.__new_windows != []:
+            for w in self.__new_windows: w.close()
+        del self.__new_windows
+        self.__new_windows = []
+
+    def __on_plot_menu_new_window_clicked(self):
+        rows = [idx.row() for idx in self.table_waves.selectionModel().selectedRows()]
+        self.__st = ob.Stream([self.data["waveforms"].traces[i] for i in rows])
+        self.__plot_widget = MplCanvasBaseWithToolbar()
+        self.__show_waveplots(self.__plot_widget.mpl, self.__st)
+        self.__update_mpl_to_tight(self.__plot_widget.mpl)
+        self.__plot_widget.show()
+        self.__new_windows.append(self.__plot_widget)
 
     def reset_configs(self):
         for key in self.configs.keys():
@@ -140,6 +218,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         # self.worker.finished.connect(lambda: self.__show_waveplots())
         self.worker.finished.connect(lambda: self._printLn("finished!"))
         self.worker.finished.connect(lambda: self.__update_mpl_to_tight(self.tab_waveplots.widgetCanvas.mpl))
+        self.worker.finished.connect(lambda: self.__set_table_phase())
         self.worker.finished.connect(lambda: self.pbar_apply.setValue(100))
     
     # def terminate_thread(self):
@@ -160,18 +239,70 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             mult = int(self.text_resize.text())
             self.tab_waveplots.widgetCanvas.setMinimumSize(self.tab_waveplots.widgetCanvas.width(), mult*len_waveforms)
     
-    def __show_waveplots(self):
-        fig = self.tab_waveplots.widgetCanvas.mpl.axes.figure
-        mpl = self.tab_waveplots.widgetCanvas.mpl
+    def __show_waveplots(self, mpl, st):
+        fig = mpl.axes.figure
         fig.clf()
-        if self.data["waveforms"] != None:
-            len_waveforms = len(self.data["waveforms"])
-            self.data["waveforms"].plot(fig=fig, equal_scale=False)
+        if st != None:
+            len_waveforms = len(st)
+            st.plot(fig=fig, equal_scale=False)
             self.tab_waveplots.widgetCanvas.setMinimumSize(self.tab_waveplots.widgetCanvas.width(), 100*len_waveforms)
             # for ax in fig.axes: ax.tick_params(axis="y",direction="in", pad=-22)
             for ax in fig.axes: ax.ticklabel_format(axis='y',style='sci', scilimits=(0,0))
             for ax in fig.axes: ax.margins(0)
             mpl.draw()
+
+        def on_key(event):
+            ax = event.inaxes
+            if event.key in ['p', 'P']:        
+                axs = self.__select_axes(ax, "P", event.xdata)        
+                for axi in axs: axi.axvline(event.xdata, picker=5)
+                mpl.draw()
+            if event.key in ['s', 'S']:
+                axs = self.__select_axes(ax, "S", event.xdata)
+                for axi in axs: axi.axvline(event.xdata, picker=5)
+                mpl.draw()
+            if event.key in ['x', 'X']:
+                if self.__selected_event != None:
+                    self.__select_remove_axes(ax, self.__selected_event)
+                    mpl.draw()
+                self.__selected_event = None
+
+        def on_pick(event):
+            self.__selected_event = event.artist
+        
+        fig.canvas.setFocusPolicy( QtCore.Qt.ClickFocus )
+        fig.canvas.setFocus()
+        fig.canvas.mpl_connect('key_press_event', on_key)
+        fig.canvas.mpl_connect('pick_event', on_pick)
+
+    def __select_axes(self, ax, phase, xdata):
+        ax_collect = []
+        ax_text = ax._children[1].get_text().split('.')
+        axs = self.tab_waveplots.widgetCanvas.mpl.axes.figure.axes
+        for row, axi in zip(self.__plot_rows, axs):
+            axi_text = axi._children[1].get_text().split('.')
+            if ax_text[0:3] == axi_text[0:3]:
+                ax_collect.append(axi)
+        df = self.__phase_df
+        df.loc[(df["network"] == ax_text[0]) &
+               (df["station"] == ax_text[1]) &
+               (df["location"] == ax_text[2]), phase] = str(ob.UTCDateTime(mpl.dates.num2date(xdata)))
+        self.__table_phase_model = TableModel(df)
+        self.table_phase.setModel(self.__table_phase_model)
+        return ax_collect
+    
+    def __select_remove_axes(self, ax, event):
+        ax_text = ax._children[1].get_text().split('.')
+        x = None
+        for i, ev in enumerate(ax._children):
+            if ev == event:
+                x = i
+        axs = self.tab_waveplots.widgetCanvas.mpl.axes.figure.axes
+        for row, axi in zip(self.__plot_rows, axs):
+            axi_text = axi._children[1].get_text().split('.')
+            if ax_text[0:3] == axi_text[0:3]:
+                axi._children[x].remove()
+        
     
     def __apply_distance_to_waves(self):
         self.__worker_progress("getting distances  . . .")
@@ -258,6 +389,23 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             self._printLn2("waveforms are not found.")
 
     def __precondition_waveforms(self):
+        if self.tree_list["Selection"][0][3].currentIndex() == 1:
+            st = None
+            for net in self.tree_list["Selection"][1][3].toPlainText().split(','):
+                for stat in self.tree_list["Selection"][2][3].toPlainText().split(','):
+                    net = net.replace(' ', '')
+                    stat = stat.replace(' ', '')
+                    self.__worker_progress(stat)
+                    tr = self.data["waveforms"].select(network=net,
+                                                station=stat,
+                                                location=self.tree_list["Selection"][3][3].toPlainText(),
+                                                channel=self.tree_list["Selection"][4][3].toPlainText(),
+                                                component=self.tree_list["Selection"][5][3].toPlainText())
+                    if st == None:
+                        st = tr
+                    else:
+                        st += tr
+            self.data["waveforms"] = st
         if self.tree_list["Precondition"][0][3].currentIndex() == 1:
             self.__worker_progress("merging data . . .")
             self.data["waveforms"].merge(method=1, interpolation_samples=-1, fill_value='interpolate')
@@ -333,20 +481,25 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.tab_time_offsets.mpl.draw()
 
     def _modify_waveforms(self):
-        self.__worker_progress("reading waveform data . . .")
-        self.worker.progress_int.emit(10)
-            
-        fileNames = self.tree_list['Waveforms'][0][3].text.toPlainText()
-        self.__worker_progress(fileNames)
-        try:
-            for i, fn in enumerate(fileNames.split('\n')):
-                if i == 0:
-                    self.data["waveforms"] = ob.read(fn)
-                else:
-                    self.data["waveforms"] += ob.read(fn)
-        except:
-            self.__worker_progress("The data cannot be load.")
-            self.data["waveforms"] = None
+        if self.tree_list["Waveform Location"][1][3].currentIndex() == 1:
+            self.__worker_progress("reading waveform data . . .")
+            self.worker.progress_int.emit(10)
+                
+            fileNames = self.tree_list['Waveform Location'][0][3].text.toPlainText()
+            self.__worker_progress(fileNames)
+            try:
+                for i, fn in enumerate(fileNames.split('\n')):
+                    if i == 0:
+                        self.data["waveforms"] = ob.read(fn)
+                    else:
+                        self.data["waveforms"] += ob.read(fn)
+
+                self.__base_waveforms = self.data["waveforms"].copy()
+            except:
+                self.__worker_progress("The data cannot be load.")
+                self.data["waveforms"] = None
+        else:
+            self.data["waveforms"] = self.__base_waveforms.copy()
 
         if self.data["waveforms"] != None:
             self.__precondition_waveforms()
@@ -355,9 +508,13 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             self.__filtering_waveforms()
             self.worker.progress_int.emit(40)
 
-            self.__worker_progress("plotting waveform data . . .")
-            self.__show_waveplots()
+            self.__set_table_waves()
             self.worker.progress_int.emit(60)
+
+            if self.tree_list["Plot Options"][0][3].currentIndex() == 1:
+                self.__worker_progress("plotting waveform data . . .")
+                self.__show_waveplots(self.tab_waveplots.widgetCanvas.mpl, self.data["waveforms"])
+                self.worker.progress_int.emit(80)
 
             if self.tree_list["Stations"][0][3].currentIndex() == 1:
                 self.__search_stations()
@@ -376,24 +533,25 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                         self.__worker_progress("The stations cannot be load.")
                         self.data["stations"] = None
 
-            self.worker.progress_int.emit(80)
+            self.worker.progress_int.emit(90)
 
-            if self.tree_list["Stations"][2][3].currentIndex() == 1:
-                self.data["event coordinate"] = [None, None]
-                try:
-                    evlon = float(self.tree_list["Event"][1][3].toPlainText())
-                    evlat = float(self.tree_list["Event"][2][3].toPlainText())
-                    self.data["event coordinate"] = [evlon, evlat]
-                    self.__worker_progress(f"a selected event (lon, lat): {self.data['event coordinate']}")
-                except:
-                    pass
-                
-                if self.data["event coordinate"] != [None, None]:
-                    self.__apply_distance_to_waves()
-                    self.__show_waveform_offsets()
-                    self.__customize_time_offsets()
-                else:
-                    self.__worker_progress("the event coordinate is not found!")
+            if self.tree_list["Plot Options"][1][3].currentIndex() == 1:
+                if self.tree_list["Stations"][2][3].currentIndex() == 1:
+                    self.data["event coordinate"] = [None, None]
+                    try:
+                        evlon = float(self.tree_list["Event"][1][3].toPlainText())
+                        evlat = float(self.tree_list["Event"][2][3].toPlainText())
+                        self.data["event coordinate"] = [evlon, evlat]
+                        self.__worker_progress(f"a selected event (lon, lat): {self.data['event coordinate']}")
+                    except:
+                        pass
+                    
+                    if self.data["event coordinate"] != [None, None]:
+                        self.__apply_distance_to_waves()
+                        self.__show_waveform_offsets()
+                        self.__customize_time_offsets()
+                    else:
+                        self.__worker_progress("the event coordinate is not found!")
     
     def __worker_progress(self, txt):
         if self.worker != None:

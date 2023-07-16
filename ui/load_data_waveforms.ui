@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>894</width>
+    <width>1018</width>
     <height>611</height>
    </rect>
   </property>
@@ -138,6 +138,31 @@
        <property name="currentIndex">
         <number>0</number>
        </property>
+       <widget class="QWidget" name="tab_wavelist">
+        <attribute name="title">
+         <string>Waveform List</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QTableView" name="table_waves"/>
+         </item>
+        </layout>
+       </widget>
        <widget class="QWidget" name="tab_main_waveplots">
         <attribute name="title">
          <string>Plot Waveforms</string>
@@ -182,6 +207,31 @@
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="tab_phase">
+        <attribute name="title">
+         <string>Phase List</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QTableView" name="table_phase"/>
+         </item>
+        </layout>
+       </widget>
        <widget class="MplCanvasBaseWithToolbar" name="tab_time_offsets">
         <attribute name="title">
          <string>Time vs.  Offsets</string>
@@ -205,6 +255,13 @@
         <widget class="QPushButton" name="btn_hide_options">
          <property name="text">
           <string>Hide Options</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_clear_windows">
+         <property name="text">
+          <string>Clear New Windows</string>
          </property>
         </widget>
        </item>
@@ -398,6 +455,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_clear_windows</sender>
+   <signal>clicked()</signal>
+   <receiver>load_data_waveforms</receiver>
+   <slot>_on_btn_clear_windows_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>707</x>
+     <y>592</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>run_kernel()</slot>
@@ -406,5 +479,6 @@
   <slot>_on_btn_saveas_stationxml_clicked()</slot>
   <slot>terminate_thread()</slot>
   <slot>_on_btn_resize_clicked()</slot>
+  <slot>_on_btn_clear_windows_clicked()</slot>
  </slots>
 </ui>
