@@ -27,6 +27,10 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 ["path", "path", None, None, ("Open Waveforms", "", "MSEED Files (*.mseed *.sac *.SAC)")],
                 ["load", "bool", None, None],
             ],
+            "Phase (X)": [
+                ["path", "path", None, None, ("Open Phase Data", "", "ASCII Files (*.txt *.dat *.csv)")],
+                ["load", "bool", None, None],
+            ],
             "Plot Options": [
                 ["all waveforms", "bool", None, None],
                 ["time vs. offsets", "bool", None, None],

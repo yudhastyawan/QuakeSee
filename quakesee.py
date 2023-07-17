@@ -8,7 +8,9 @@ from PyQt5 import QtWidgets, uic, QtCore
 import sys
 
 class MainWindow(QtWidgets.QMainWindow):
-
+    """
+    Main window of this program.
+    """
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 

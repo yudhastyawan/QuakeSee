@@ -1,6 +1,12 @@
+"""
+Author: Yudha Styawan
+File: search_by_maps.py
+"""
+
 from PyQt5 import QtWidgets, uic, QtCore
 import sys
 import geopandas as gpd
+import pandas as pd
 import obspy as ob
 from obspy.clients.fdsn.header import URL_MAPPINGS
 from obspy.clients.fdsn.client import Client
@@ -10,85 +16,131 @@ from matplotlib.transforms import blended_transform_factory
 
 from libs.select_from_collection import SelectFromCollection
 from libs.commons import Worker
+from libs.utils import TableModel
 
 class SearchByMaps(QtWidgets.QWidget):
+    """
+    Searching events, stations, and waveforms available publicly on the providers
+    """
     def __init__(self, parent = None):
         QtWidgets.QWidget.__init__(self, parent)
 
         #Load the UI Page
         uic.loadUi('./ui/search_by_maps.ui', self)
 
-        # variables
+        # configurations
+        # - base clients    : available providers
+        # - selected clients: providers used for searching stations and waveforms
+        # - client events   : a provider used for searching events
+        # - Mmin            : Minimum magnitude used for limiting events
+        # - waveform time   : a list consists of 2 elements, the relative time in seconds before
+        #                     and after origin time, used for limiting waveforms
+        # - network filter  : network used for limiting stations. Accept UNIX wildcard, 
+        #                     such as *, ?, and [], except {}. Accept multiple conditions separated by
+        #                     comma
+        # - station filter  : station used for limiting station codes. Using the same condition as network
+        #                     filter
+        # - channel filter  : channel used for limiting stations. Using the same condition as network
+        #                     filter
+        # - geod reference  : geodetic reference used for converting lonlat to meters, vice versa.
+        # - show waveform component: the component used for the time vs offset plots.
+        # - (not used) search filter   : ["?H?", "[BHE]*"]
         self.configs = {
-            "base clients": list(URL_MAPPINGS.keys()),
-            "selected clients": list(URL_MAPPINGS.keys()),
-            "client events": "GFZ",
-            "Mmin": 4,
-            "waveform time": [-2,200],
-            "network filter": "*",
-            "station filter": "*",
-            # "search filter": ["?H?", "[BHE]*"],
-            "channel filter": "BH?,EH?,HH?",
-            "geod reference": 'WGS84',
-            "show waveform component": 'Z',
+            "base clients"            : list(URL_MAPPINGS.keys()),
+            "selected clients"        : list(URL_MAPPINGS.keys()),
+            "client events"           : "GFZ",
+            "Mmin"                    : 4,
+            "waveform time"           : [-2,200],
+            "network filter"          : "*",
+            "station filter"          : "*",
+            "channel filter"          : "BH?,EH?,HH?",
+            "geod reference"          : 'WGS84',
+            "show waveform component" : 'Z',
         }
 
         # configs base
+        # - used for the back-up configs while the configs need to be reset.
         self.configs_base = self.configs.copy()
 
+        # data
+        # - events            : the collection of events after searching
+        # - selected event    : a particular event used for searching stations and waveforms
+        # - stations          : the collection of events for a "selected event"
+        # - selected stations : used for searching waveforms
+        # - waveforms         : the collection of waveforms for a "selected event" and "selected stations"
         self.data = {
-            "events": None,
-            "selected event": None,
-            "stations": None,
-            "selected stations": None,
-            "waveforms": None
+            "events"            : None,
+            "selected event"    : None,
+            "stations"          : None,
+            "selected stations" : None,
+            "waveforms"         : None
         }
 
-        self._print = lambda x: self.py_console._append_plain_text(x, True)
-        self._printLn = lambda x: self._print(x + "\n")
+        # print to console
+        self._print    = lambda x: self.py_console._append_plain_text(x, True)
+        self._printLn  = lambda x: self._print(x + "\n")
         self._printLn2 = lambda x: self._print("\n" + x + "\n")
 
         # temporary variables
-        self.__pass_inv = None
-        self.stat_txts = []
+        self.__pass_inv     = None
+        self.__map_df       = None
+        self.stat_txts      = []
         self.accepted_bulks = []
 
 
         # initial state
         self.cv_distance.mpl.axes.figure.clf()
+        self.thread = None
+        self.worker = None
 
+        # kernel
+        # - _map: notably used for debugging.
+        # - map_configs: a "call" name for showing all configurations in console.
+        # - map_data: a "call" name for showing all data info in console
+        # - map_configs_reset: a function for reset the configs. But call it by "map_configs_reset()"
         kernel_dict = {
-            "_map":self,
-            "map_configs":self.configs,
-            "map_data":self.data,
-            "map_configs_reset":self.reset_configs
+            "_map"              :self,
+            "map_configs"       :self.configs,
+            "map_data"          :self.data,
+            "map_configs_reset" :self.reset_configs
         }
 
+        # a function to push kernel to console
         self._push_kernel = lambda: self.py_console.push_kernel(kernel_dict)
 
+        # a local function to get an index of the selected event
         self.ind_ev = 0
         def get_ind(mpl):
             self.ind_ev = mpl.ind
             self.data["selected event"] = self.data["events"][self.ind_ev]
             self._printLn2(self.data["selected event"].__str__())
-        
-        self.thread = None
-        self.worker = None
 
+        # reset map
         self.mpl_map_reset(self.mpl_select_map.mpl)
+
+        # signal/slot while clicking a selected event
         self.mpl_select_map_plot.mpl.communicate.sig[int].connect(
             lambda: self.show_events_in_mpl_2(self.mpl_select_map_plot.mpl))
         self.mpl_select_map_plot.mpl.communicate.sig[int].connect(
             lambda: get_ind(self.mpl_select_map_plot.mpl))
         
     def reset_configs(self):
+        """
+        reset the configs to default
+        """
         for key in self.configs.keys():
             self.configs[key] = self.configs_base[key]
 
     def _on_btn_map_reset(self):
+        """
+        reset the map to a blank canvas (used for button)
+        """
         self.mpl_map_reset(self.mpl_select_map.mpl)
 
     def mpl_map_reset(self, mpl):
+        """
+        reset the map to a blank canvas
+        """
         def get_ind(mpl):
             self.ind_ev = mpl.ind
             self.data["selected event"] = self.data["events"][self.ind_ev]
@@ -103,6 +155,9 @@ class SearchByMaps(QtWidgets.QWidget):
             lambda: get_ind(mpl))
 
     def draw_basemap(self, mpl):
+        """
+        draw the world basemap (low resolution) in the map
+        """
         gdf_map = gpd.read_file('./coastlines/ne_110m_land.shp')
         ax = mpl.axes
         gdf_map.plot(color='lightgrey', edgecolor='black', linewidth=1, ax=ax, clip_on=False)
@@ -113,37 +168,74 @@ class SearchByMaps(QtWidgets.QWidget):
         mpl.draw()
 
     def run_kernel(self):
+        """
+        running a python script from the editor on the console
+        """
         self.py_console.run_kernel(self.py_editor.toPlainText())
         self.tab_code.setCurrentIndex(0)
 
     def _show_events(self):
+        """
+        showing events based on the formed rectangle
+        """
         if self.worker != None:
             self.worker.progress.emit("\nsearch events . . .")
 
+        # t1 and t2 as the time limitation (min and max)
         client = Client(self.configs["client events"])
         t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
         t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
+
+        # lon and lat from the rectangle
         (minlon, maxlon), (minlat, maxlat) = self.mpl_select_map.mpl.data
+
         try:
             self.data["events"] = client.get_events(starttime=t1, endtime=t2, minmagnitude=self.configs["Mmin"], 
                                     minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
             x = []
             y = []
             m = []
+            d = []
             t = []
+            tutc = []
+            a = []
             for event in self.data["events"]:
                 x.append(event.origins[0].longitude)
                 y.append(event.origins[0].latitude)
                 m.append(event.magnitudes[0].mag)
                 t.append(event.origins[0].time.matplotlib_date)
+                d.append(event.origins[0].depth/1000)
+                tutc.append(str(event.origins[0].time))
+                a.append(event.event_descriptions[0].text)
             
             if self.worker != None:
                 self.worker.progress.emit("plotting . . .")
 
+            # plotting events to the basemap
             ax = self.mpl_select_map.mpl.axes
             ax.plot(x, y, 'ro', picker=10, clip_on=False)
             self.mpl_select_map.mpl.draw()
 
+            # creating a table
+            if self.chk_showtable.isChecked():
+                if self.worker != None:
+                    self.worker.progress.emit("creating a table . . .")
+                event_dict = {
+                    "origin time" :tutc,
+                    "longitude"   :x, 
+                    "latitude"    :y, 
+                    "depth"       :d,
+                    "magnitude"   :m,
+                    "region"      :a,
+                    }
+                
+                self.__map_df = pd.DataFrame.from_dict(event_dict)
+                self.__table_model = TableModel(self.__map_df)
+                self.table_events.setModel(self.__table_model)
+                self.table_events.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+                self.table_events.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+
+            # plotting events as magnitude vs. time
             self.mpl_select_map_plot.mpl.axes.cla()
             ax = self.mpl_select_map_plot.mpl.axes
             ax.plot(t, m, 'ro', picker=10, clip_on=False)
@@ -152,12 +244,22 @@ class SearchByMaps(QtWidgets.QWidget):
             ax.set_ylabel("Magnitude")
             ax.set_xlabel("Time")
             self.mpl_select_map_plot.mpl.draw()
+
         except:
             if self.worker != None:
                 self.worker.progress.emit("error during the process!")
         # print(self.data["events"])
 
+    def _on_btn_selectevent_tbl_clicked(self):
+        ind = [idx.row() for idx in self.table_events.selectionModel().selectedRows()]
+        if ind != []:
+            ind = ind[0]
+        self.show_events_in_mpl_2_ind(ind)
+
     def _on_btn_show_events_clicked(self):
+        """
+        considering searching and loading events in a thread
+        """
         self.thread = QtCore.QThread()
         self.worker = Worker(self._show_events)
         self.worker.moveToThread(self.thread)
@@ -169,7 +271,7 @@ class SearchByMaps(QtWidgets.QWidget):
         self.worker.progress[str].connect(self._printLn)
         self.thread.start()
 
-        # Final resets
+        # show event button is disabled during process
         self.btn_showevents.setEnabled(False)
         self.thread.finished.connect(
             lambda: self.btn_showevents.setEnabled(True)
@@ -177,6 +279,8 @@ class SearchByMaps(QtWidgets.QWidget):
         self.thread.finished.connect(lambda: self.btn_rectangle.setChecked(False))
         
     def _on_btn_show_stations_clicked(self):
+        """
+        """
         self.thread = QtCore.QThread()
         self.worker = Worker(self._show_stations)
         self.worker.moveToThread(self.thread)
@@ -196,6 +300,8 @@ class SearchByMaps(QtWidgets.QWidget):
         self.thread.finished.connect(lambda: self.btn_rectangle_2.setChecked(False))
 
     def _show_stations(self):
+        """
+        """
         client = RoutingClient("iris-federator")
 
         t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
@@ -233,19 +339,27 @@ class SearchByMaps(QtWidgets.QWidget):
         self.mpl_select_map_2.mpl.draw()
     
     def show_events_in_mpl_2(self, mpl):
+        """
+        """
+        idx = mpl.ind
+        self.show_events_in_mpl_2_ind(idx)
+        
+
+    def show_events_in_mpl_2_ind(self, idx):
         self.mpl_select_map_2.mpl.axes.cla()
         self.draw_basemap(self.mpl_select_map_2.mpl)
         self.mpl_select_map_2.mpl._activate_rectangle()
         # gdf_map = gpd.read_file('./coastlines/ne_110m_land.shp')
         ax = self.mpl_select_map_2.mpl.axes
-        # gdf_map.plot(ax=ax, clip_on=False)
-        idx = mpl.ind
+        # gdf_map.plot(ax=ax, clip_on=False)        
         ax.plot(self.data["events"][idx].origins[0].longitude,
                 self.data["events"][idx].origins[0].latitude,
                 'ro', clip_on=False)
         self.mpl_select_map_2.mpl.draw()
 
     def _select_stations(self, bool):
+        """
+        """
         if self.stat_txts != []:
             for txt in self.stat_txts:
                 txt.remove()
@@ -262,6 +376,8 @@ class SearchByMaps(QtWidgets.QWidget):
             self.mpl_select_map_2.mpl.draw()
 
     def __select_stations_by_indices(self):
+        """
+        """
         self.data["selected stations"] = None
         for __n, idx in enumerate(self.stat_selector.ind):
             i, j = self.__pass_inv[f"{idx}"]
@@ -274,6 +390,8 @@ class SearchByMaps(QtWidgets.QWidget):
                 self.data["selected stations"].extend(self.data["stations"].select(network=net, station=st))
 
     def _on_btn_get_waveforms_clicked(self):
+        """
+        """
         self.thread = QtCore.QThread()
         self.worker = Worker(self._get_waveforms)
         self.worker.moveToThread(self.thread)
@@ -291,6 +409,8 @@ class SearchByMaps(QtWidgets.QWidget):
         )
 
     def _get_waveforms(self):
+        """
+        """
         g = Geod(ellps=self.configs["geod reference"])
 
         otime = self.data["selected event"].origins[0].time
@@ -340,6 +460,8 @@ class SearchByMaps(QtWidgets.QWidget):
                     pass
 
     def _show_waveforms(self):
+        """
+        """
         fig = self.cv_distance.mpl.axes.figure
         fig.clf()
         if self.data["waveforms"] != None:
@@ -369,6 +491,8 @@ class SearchByMaps(QtWidgets.QWidget):
             self._printLn2("waveforms are not found.")
 
     def _save_stations(self):
+        """
+        """
         fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Stations", "", "XML Files (*.xml)")
         if fileName:
             if self.data["selected stations"] != None:
@@ -376,6 +500,8 @@ class SearchByMaps(QtWidgets.QWidget):
                 self._printLn2(f"saving station data to {fileName}")
     
     def _save_waveforms(self):
+        """
+        """
         fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Waveforms", "", "MSEED Files (*.mseed)")
         if fileName:
             if self.data["waveforms"] != None:
