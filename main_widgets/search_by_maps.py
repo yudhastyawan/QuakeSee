@@ -45,9 +45,11 @@ class SearchByMaps(QtWidgets.QWidget):
         # - geod reference  : geodetic reference used for converting lonlat to meters, vice versa.
         # - show waveform component: the component used for the time vs offset plots.
         # - (not used) search filter   : ["?H?", "[BHE]*"]
+        url_keys = list(URL_MAPPINGS.keys())
+        url_keys.remove('IRISPH5')
         self.configs = {
-            "base clients"            : list(URL_MAPPINGS.keys()),
-            "selected clients"        : list(URL_MAPPINGS.keys()),
+            "base clients"            : url_keys,
+            "selected clients"        : url_keys,
             "client events"           : "GFZ",
             "Mmin"                    : 4,
             "waveform time"           : [-2,200],
@@ -195,6 +197,7 @@ class SearchByMaps(QtWidgets.QWidget):
             x = []
             y = []
             m = []
+            mt = []
             d = []
             t = []
             tutc = []
@@ -203,6 +206,7 @@ class SearchByMaps(QtWidgets.QWidget):
                 x.append(event.origins[0].longitude)
                 y.append(event.origins[0].latitude)
                 m.append(event.magnitudes[0].mag)
+                mt.append(event.magnitudes[0].magnitude_type)
                 t.append(event.origins[0].time.matplotlib_date)
                 d.append(event.origins[0].depth/1000)
                 tutc.append(str(event.origins[0].time))
@@ -221,12 +225,13 @@ class SearchByMaps(QtWidgets.QWidget):
                 if self.worker != None:
                     self.worker.progress.emit("creating a table . . .")
                 event_dict = {
-                    "origin time" :tutc,
-                    "longitude"   :x, 
-                    "latitude"    :y, 
-                    "depth"       :d,
-                    "magnitude"   :m,
-                    "region"      :a,
+                    "origin time"   :tutc,
+                    "longitude"     :x, 
+                    "latitude"      :y, 
+                    "depth"         :d,
+                    "magnitude"     :m,
+                    "magnitude type":mt,
+                    "region"        :a,
                     }
                 
                 self.__map_df = pd.DataFrame.from_dict(event_dict)
@@ -251,10 +256,14 @@ class SearchByMaps(QtWidgets.QWidget):
         # print(self.data["events"])
 
     def _on_btn_selectevent_tbl_clicked(self):
+        """
+        """
         ind = [idx.row() for idx in self.table_events.selectionModel().selectedRows()]
         if ind != []:
             ind = ind[0]
-        self.show_events_in_mpl_2_ind(ind)
+            self.data["selected event"] = self.data["events"][ind]
+            self._printLn2(self.data["selected event"].__str__())
+            self.show_events_in_mpl_2_ind(ind)
 
     def _on_btn_show_events_clicked(self):
         """
@@ -507,6 +516,28 @@ class SearchByMaps(QtWidgets.QWidget):
             if self.data["waveforms"] != None:
                 self.data["waveforms"].write(fileName, format="MSEED")
                 self._printLn2(f"saving waveform data to {fileName}")
+
+    def _on_btn_save_events_clicked(self):
+        """
+        """
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Events", "", "ASCII Files (*.csv)")
+        if fileName:
+            try:
+                self.__map_df.to_csv(fileName, index=False)
+            except:
+                pass
+
+    def _on_btn_save_stations_csv_clicked(self):
+        """
+        """
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Stations", "", "ASCII Files (*.csv)")
+        if fileName:
+            try:
+                pass
+
+                # df.to_csv(fileName, index=False)
+            except:
+                pass
 
 
 def main():

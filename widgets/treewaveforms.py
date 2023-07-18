@@ -53,6 +53,8 @@ class TreeWaveforms(QtWidgets.QTreeView):
         return self.tree_list
 
 class QTextAndButton(QtWidgets.QWidget):
+    _signal = QtCore.pyqtSignal()
+
     def __init__(self, parent = None):
         QtWidgets.QWidget.__init__(self, parent)
         vlay = QtWidgets.QVBoxLayout()
@@ -82,6 +84,7 @@ class QTextAndButtonDialog(QTextAndButton):
         fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, *self.args)
         if fileNames:
             self.text.setPlainText("\n".join(fileNames))
+            self._signal.emit()
 
 class QComboBool(QtWidgets.QComboBox):
     def __init__(self, parent = None):

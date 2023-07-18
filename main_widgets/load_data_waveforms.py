@@ -10,7 +10,7 @@ from pyproj import Geod
 from matplotlib.transforms import blended_transform_factory
 import pandas as pd
 import numpy as np
-import matplotlib as mpl
+import matplotlib as mplib
 
 class LoadDataWaveforms(QtWidgets.QWidget):
     def __init__(self, parent = None):
@@ -27,10 +27,6 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 ["path", "path", None, None, ("Open Waveforms", "", "MSEED Files (*.mseed *.sac *.SAC)")],
                 ["load", "bool", None, None],
             ],
-            "Phase (X)": [
-                ["path", "path", None, None, ("Open Phase Data", "", "ASCII Files (*.txt *.dat *.csv)")],
-                ["load", "bool", None, None],
-            ],
             "Plot Options": [
                 ["all waveforms", "bool", None, None],
                 ["time vs. offsets", "bool", None, None],
@@ -40,6 +36,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 ["datetime", "calendar", None, None],
                 ["longitude", "number", None, None],    
                 ["latitude", "number", None, None],
+                ["depth", "number", None, None],
             ],
             "Stations": [
                 ["online search", "bool", None, None],
@@ -74,9 +71,11 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             ]
         }
 
+        url_keys = list(URL_MAPPINGS.keys())
+        url_keys.remove('IRISPH5')
         self.configs = {
-            "base clients": list(URL_MAPPINGS.keys()),
-            "selected clients": list(URL_MAPPINGS.keys()),
+            "base clients": url_keys,
+            "selected clients": url_keys,
             "geod reference": 'WGS84',
             "show waveform component": 'Z',
         }
@@ -105,6 +104,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.__plot_rows = None
         self.__wave_df = None
         self.__phase_df = None
+        self.__phase_check = None
 
         self.thread = None
         self.worker = None
@@ -128,7 +128,10 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.tree_list["Selection"][3][3].setText("*")
         self.tree_list["Selection"][4][3].setText("*")
         self.tree_list["Selection"][5][3].setText("*")
-        self.tree_list["Waveform Location"][1][3].setCurrentIndex(1)
+        self.tree_list["Event"][3][3].setText("0")
+        self.tree_list['Waveform Location'][0][3]._signal.connect(
+            lambda: self.tree_list["Waveform Location"][1][3].setCurrentIndex(1)
+            )
 
     def __set_table_waves(self):
         data = {"network":[], "station":[], "location":[], "channel":[], "starttime":[], "endtime":[],
@@ -145,13 +148,13 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         data_phase = {"network":[], "station":[], "location":[]}
         P = []
         S = []
-        check = ""
+        check = []
         for tr in self.__base_waveforms:
-            if check != "".join([tr.stats.__dict__[key] for key in ["network", "station", "location"]]):
+            if "".join([tr.stats.__dict__[key] for key in ["network", "station", "location"]]) not in check:
                 data_phase = {key: data_phase[key] + [tr.stats.__dict__[key]] for key in ["network", "station", "location"]}
                 P.append(np.nan)
                 S.append(np.nan)
-            check = "".join([tr.stats.__dict__[key] for key in ["network", "station", "location"]])
+            check.append("".join([tr.stats.__dict__[key] for key in ["network", "station", "location"]]))
         data_phase["P"] = P
         data_phase["S"] = S
         self.__phase_df = pd.DataFrame.from_dict(data_phase)
@@ -222,8 +225,10 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         # self.worker.finished.connect(lambda: self.__show_waveplots())
         self.worker.finished.connect(lambda: self._printLn("finished!"))
         self.worker.finished.connect(lambda: self.__update_mpl_to_tight(self.tab_waveplots.widgetCanvas.mpl))
-        self.worker.finished.connect(lambda: self.__set_table_phase())
+        if self.tree_list["Waveform Location"][1][3].currentIndex() == 1:
+            self.worker.finished.connect(lambda: self.__set_table_phase())
         self.worker.finished.connect(lambda: self.pbar_apply.setValue(100))
+        self.worker.finished.connect(lambda: self.tree_list["Waveform Location"][1][3].setCurrentIndex(0))
     
     # def terminate_thread(self):
     #     if self.thread != None:
@@ -257,21 +262,42 @@ class LoadDataWaveforms(QtWidgets.QWidget):
 
         def on_key(event):
             ax = event.inaxes
-            if event.key in ['p', 'P']:        
-                axs = self.__select_axes(ax, "P", event.xdata)        
-                for axi in axs: axi.axvline(event.xdata, picker=5)
-                mpl.draw()
+            if event.key in ['p', 'P']:
+                if event.xdata != self.__phase_check:        
+                    axs = self.__select_axes(ax, "P", event.xdata)        
+                    for axi in axs: axi.axvline(event.xdata, picker=5, c="blue")
+                    mpl.draw()
+                    for axi in axs: axi._children[-1].phase = "P"
+                    self.__phase_check = event.xdata
             if event.key in ['s', 'S']:
-                axs = self.__select_axes(ax, "S", event.xdata)
-                for axi in axs: axi.axvline(event.xdata, picker=5)
-                mpl.draw()
-            if event.key in ['x', 'X']:
+                if event.xdata != self.__phase_check:   
+                    axs = self.__select_axes(ax, "S", event.xdata)
+                    for axi in axs: axi.axvline(event.xdata, picker=5, c="red")
+                    mpl.draw()
+                    for axi in axs: axi._children[-1].phase = "S"
+                    self.__phase_check = event.xdata
+            if event.key in ['x', 'X']:   
                 if self.__selected_event != None:
                     self.__select_remove_axes(ax, self.__selected_event)
                     mpl.draw()
                 self.__selected_event = None
+            if event.key in ['n', 'N']:
+                self.__plot_widget = MplCanvasBaseWithToolbar()
+                for c, child in enumerate(ax._children):
+                    if c != 1:
+                        x, y = child._xy[:,0], child._xy[:,1]
+                        if c == 0: self.__plot_widget.mpl.axes.plot(x, y, c='black', linewidth=1)
+                        else:
+                            color = 'blue' if child.phase == "P" else 'red'
+                            self.__plot_widget.mpl.axes.axvline(x[0], c=color)
+                self.__plot_widget.mpl.axes.set_xlim(ax._viewLim._points[:,0])
+                self.__plot_widget.mpl.axes.set_ylim(ax._viewLim._points[:,1])
+                self.__plot_widget.mpl.axes.xaxis_date()
+                self.__plot_widget.mpl.axes.figure.autofmt_xdate()
+                self.__plot_widget.show()
+                self.__new_windows.append(self.__plot_widget)
 
-        def on_pick(event):
+        def on_pick(event):    
             self.__selected_event = event.artist
         
         fig.canvas.setFocusPolicy( QtCore.Qt.ClickFocus )
@@ -280,32 +306,44 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         fig.canvas.mpl_connect('pick_event', on_pick)
 
     def __select_axes(self, ax, phase, xdata):
-        ax_collect = []
         ax_text = ax._children[1].get_text().split('.')
         axs = self.tab_waveplots.widgetCanvas.mpl.axes.figure.axes
-        for row, axi in zip(self.__plot_rows, axs):
-            axi_text = axi._children[1].get_text().split('.')
-            if ax_text[0:3] == axi_text[0:3]:
-                ax_collect.append(axi)
+        ax_collect = self.__collect_axes(axs, ax_text[0:3])
         df = self.__phase_df
         df.loc[(df["network"] == ax_text[0]) &
                (df["station"] == ax_text[1]) &
-               (df["location"] == ax_text[2]), phase] = str(ob.UTCDateTime(mpl.dates.num2date(xdata)))
+               (df["location"] == ax_text[2]), phase] = str(ob.UTCDateTime(mplib.dates.num2date(xdata)))
         self.__table_phase_model = TableModel(df)
         self.table_phase.setModel(self.__table_phase_model)
         return ax_collect
     
+    def __collect_axes(self, axs, netstatloc):
+        ax_collect = []
+        for axi in axs:
+            axi_text = axi._children[1].get_text().split('.')
+            if netstatloc == axi_text[0:3]:
+                ax_collect.append(axi)
+        return ax_collect
+    
     def __select_remove_axes(self, ax, event):
+        df = self.__phase_df
         ax_text = ax._children[1].get_text().split('.')
         x = None
         for i, ev in enumerate(ax._children):
             if ev == event:
                 x = i
         axs = self.tab_waveplots.widgetCanvas.mpl.axes.figure.axes
-        for row, axi in zip(self.__plot_rows, axs):
+        ph = None
+        for axi in axs:
             axi_text = axi._children[1].get_text().split('.')
             if ax_text[0:3] == axi_text[0:3]:
+                if ph == None: ph = axi._children[x].phase
                 axi._children[x].remove()
+        df.loc[(df["network"] == ax_text[0]) &
+                (df["station"] == ax_text[1]) &
+                (df["location"] == ax_text[2]), ph] = np.nan
+        self.__table_phase_model = TableModel(df)
+        self.table_phase.setModel(self.__table_phase_model)
         
     
     def __apply_distance_to_waves(self):
@@ -326,7 +364,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                     stlon = inv_sel[0][0]._longitude
                     stlat = inv_sel[0][0]._latitude
                     _,_,dist = g.inv(evlon,evlat,stlon,stlat)
-                    tr.stats.distance = dist 
+                    depth = float(self.tree_list["Event"][3][3].toPlainText()) * 1000
+                    tr.stats.distance = np.sqrt(np.power(dist, 2) + np.power(depth, 2))
                     selected_traces.append(tr)
                     starttimes.append(tr.stats.starttime)
             
@@ -378,19 +417,25 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         if self.data["selected waveforms"] != None:
             self.__worker_progress("showing offset plots . . .")
             stsel = self.data["selected waveforms"].select(component=self.configs["show waveform component"])
-            stsel.detrend()
-            # stsel.filter("highpass", freq=1.0)
-            stsel.plot(type='section', recordlength=None,
-                        time_down=True, linewidth=.25, grid_linewidth=.25, show=False, fig=fig)
-            ax = fig.axes[0]
-            transform = blended_transform_factory(ax.transData, ax.transAxes)
-            for tr in stsel:
-                ax.text(tr.stats.distance / 1e3, 1.0, tr.stats.station, rotation=270,
-                        va="bottom", ha="center", transform=transform, zorder=10)
-            self.tab_time_offsets.mpl.draw()
+            try:
+                stsel.detrend()
+                # stsel.filter("highpass", freq=1.0)
+                stsel.plot(type='section', recordlength=None,
+                            time_down=True, linewidth=.25, grid_linewidth=.25, show=False, fig=fig)
+                ax = fig.axes[0]
+                transform = blended_transform_factory(ax.transData, ax.transAxes)
+                for tr in stsel:
+                    ax.text(tr.stats.distance / 1e3, 1.0, tr.stats.station, rotation=270,
+                            va="bottom", ha="center", transform=transform, zorder=10)
+                self.tab_time_offsets.mpl.draw()
+                return True
+            except:
+                self._printLn2(f"error! list of selected waveforms:\n{str(stsel)}")
+                return False
 
         else:
             self._printLn2("waveforms are not found.")
+            return False
 
     def __precondition_waveforms(self):
         if self.tree_list["Selection"][0][3].currentIndex() == 1:
@@ -552,8 +597,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                     
                     if self.data["event coordinate"] != [None, None]:
                         self.__apply_distance_to_waves()
-                        self.__show_waveform_offsets()
-                        self.__customize_time_offsets()
+                        if self.__show_waveform_offsets(): self.__customize_time_offsets()                        
                     else:
                         self.__worker_progress("the event coordinate is not found!")
     
@@ -574,3 +618,84 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             if self.data["stations"] != None:
                 self.data["stations"].write(fileName, format="STATIONXML")
                 self._printLn2(f"saving station data to {fileName}")
+
+    def _on_btn_save_phase_clicked(self):
+        """
+        """
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Phases", "", "ASCII Files (*.csv)")
+        if fileName:
+            try:
+                self.__phase_df.to_csv(fileName, index=False)
+            except:
+                pass
+
+    def _on_btn_load_phase_clicked(self):
+        """
+        """
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Phase File", "", "ASCII Files (*.csv)")
+        if fileName:
+            try:
+                df = pd.read_csv(fileName)
+                if self.chk_over_phase.isChecked():
+                    df.loc[pd.isna(df["location"]), "location"] = ""
+                    self.__phase_df = df
+                else: 
+                    for ph in ["P", "S"]:
+                        df_P = df[df[ph].notnull()]
+                        for _, row in df_P.iterrows():
+                            net, stat, loc, t = row["network"], row["station"], row["location"], row[ph]
+                            if np.isnan(loc): loc = ""
+                            self.__phase_df.loc[(self.__phase_df["network"] == net) &
+                                                (self.__phase_df["station"] == stat) &
+                                                (self.__phase_df["location"] == loc), ph] = t
+                self.__table_phase_model = TableModel(self.__phase_df)
+                self.table_phase.setModel(self.__table_phase_model)
+            except:
+                pass
+
+    def _on_btn_add_phase_clicked(self):
+        df = self.__phase_df
+        mpl = self.tab_waveplots.widgetCanvas.mpl
+        axs = mpl.axes.figure.axes
+        for ph, c in zip(["P", "S"], ["blue", "red"]):
+            df_P = df[df[ph].notnull()]
+            for _, row in df_P.iterrows():
+                net, stat, loc = row["network"], row["station"], row["location"]
+                tnum = mplib.dates.date2num(ob.UTCDateTime(row[ph]).datetime)
+                ax_collect = self.__collect_axes(axs, [net, stat, loc])
+                for axi in ax_collect: axi.axvline(tnum, picker=5, c=c)
+                mpl.draw()
+                for axi in ax_collect: axi._children[-1].phase = ph
+
+    def _on_btn_add_phase_sac_clicked(self):
+        df = self.__phase_df
+        for tr in self.__base_waveforms:
+            sta = tr.stats
+            if "sac" in sta.__dict__.keys():
+                for ph_1, ph_2 in zip(["P", "S"], ["a", "t0"]):
+                    if ph_2 in sta.sac.__dict__.keys():
+                        t = sta.starttime - sta.sac['b'] + sta.sac[ph_2]
+
+                        df.loc[(df["network"] == sta.network) &
+                               (df["station"] == sta.station) &
+                               (df["location"] == sta.location), ph_1] = str(t)
+                        
+        self.__table_phase_model = TableModel(df)
+        self.table_phase.setModel(self.__table_phase_model)
+
+    def _on_btn_extract_est_phase_clicked(self):
+        df = self.__phase_df
+        vp = float(self.tree_list["Time vs. Offsets"][2][3].toPlainText())
+        vs = float(self.tree_list["Time vs. Offsets"][3][3].toPlainText())
+        for ph, vv in zip(["P", "S"], [vp, vs]):
+            for tr in self.data["selected waveforms"]:
+                sta = tr.stats
+                dist = sta.distance
+                t = dist/(vv * 1000)
+                t = self.data['origin time'] + t
+                df.loc[(df["network"] == sta.network) &
+                        (df["station"] == sta.station) &
+                        (df["location"] == sta.location), ph] = str(t)
+                        
+        self.__table_phase_model = TableModel(df)
+        self.table_phase.setModel(self.__table_phase_model)

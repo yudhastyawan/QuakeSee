@@ -33,8 +33,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.search_by_maps.py_editor = self.py_editor
         self.load_data_waveforms.py_console = self.py_console
         self.load_data_waveforms.py_editor = self.py_editor
+        self.load_data_stations.py_console = self.py_console
+        self.load_data_stations.py_editor = self.py_editor
         self.search_by_maps._push_kernel()
         self.load_data_waveforms._push_kernel()
+        self.load_data_stations._push_kernel()
 
         # Generate the main tree list
         # - (X) denotes the unimplemented features
@@ -44,7 +47,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 ["Search By Maps", 0],
                 ["Download ISC Catalogue (X)", None],
                 ["Load Waveform Data", 4],
-                ["Load Station Data (X)", None],
+                ["Load Station Data", 5],
                 ["Continuous Data (X)", None]
             ],
             "Utilities": [
@@ -83,6 +86,28 @@ class MainWindow(QtWidgets.QMainWindow):
     def run_kernel(self):
         self.py_console.run_kernel(self.py_editor.toPlainText())
         self.dock_console.raise_()
+
+    def _on_btn_load_py_clicked(self):
+        """
+        """
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Python file", "", "Python File (*.py)")
+        if fileName:
+            try:
+                with open(fileName, 'r') as f:
+                    self.py_editor.setPlainText(f.read())
+            except:
+                pass
+    
+    def _on_btn_save_py_clicked(self):
+        """
+        """
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Python file", "", "Python File (*.py)")
+        if fileName:
+            try:
+                with open(fileName, 'w') as f:
+                    f.write(self.py_editor.toPlainText())
+            except:
+                pass
 
 
 def main():

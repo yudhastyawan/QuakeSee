@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1018</width>
+    <width>1047</width>
     <height>611</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -184,6 +196,33 @@
           <number>0</number>
          </property>
          <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Pick by pressing P and S, remove by click + X</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
           <widget class="PlotWaveforms" name="tab_waveplots" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -204,6 +243,33 @@
             </size>
            </property>
           </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="btn_add_phase">
+             <property name="text">
+              <string>Apply Phase from Table</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -230,12 +296,129 @@
          <item>
           <widget class="QTableView" name="table_phase"/>
          </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QCheckBox" name="chk_over_phase">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>overwrite</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_load_phase">
+             <property name="text">
+              <string>Load Phase</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_add_phase_sac">
+             <property name="text">
+              <string>Apply Phase from SAC</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_save_phase">
+             <property name="text">
+              <string>Save Phase to csv</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
         </layout>
        </widget>
-       <widget class="MplCanvasBaseWithToolbar" name="tab_time_offsets">
+       <widget class="QWidget" name="tab_to">
         <attribute name="title">
          <string>Time vs.  Offsets</string>
         </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="MplCanvasBaseWithToolbar" name="tab_time_offsets" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="btn_extract_est_phase">
+             <property name="text">
+              <string>Extract Estimated Phase</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_7">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
       </widget>
      </item>
@@ -328,7 +511,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -471,6 +654,86 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_save_phase</sender>
+   <signal>clicked()</signal>
+   <receiver>load_data_waveforms</receiver>
+   <slot>_on_btn_save_phase_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>581</x>
+     <y>557</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_load_phase</sender>
+   <signal>clicked()</signal>
+   <receiver>load_data_waveforms</receiver>
+   <slot>_on_btn_load_phase_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>460</x>
+     <y>557</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_add_phase</sender>
+   <signal>clicked()</signal>
+   <receiver>load_data_waveforms</receiver>
+   <slot>_on_btn_add_phase_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>491</x>
+     <y>557</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_add_phase_sac</sender>
+   <signal>clicked()</signal>
+   <receiver>load_data_waveforms</receiver>
+   <slot>_on_btn_add_phase_sac_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>593</x>
+     <y>557</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_extract_est_phase</sender>
+   <signal>clicked()</signal>
+   <receiver>load_data_waveforms</receiver>
+   <slot>_on_btn_extract_est_phase_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>498</x>
+     <y>557</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>run_kernel()</slot>
@@ -480,5 +743,10 @@
   <slot>terminate_thread()</slot>
   <slot>_on_btn_resize_clicked()</slot>
   <slot>_on_btn_clear_windows_clicked()</slot>
+  <slot>_on_btn_save_phase_clicked()</slot>
+  <slot>_on_btn_load_phase_clicked()</slot>
+  <slot>_on_btn_add_phase_clicked()</slot>
+  <slot>_on_btn_add_phase_sac_clicked()</slot>
+  <slot>_on_btn_extract_est_phase_clicked()</slot>
  </slots>
 </ui>

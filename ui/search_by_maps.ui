@@ -244,6 +244,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="btn_save_events">
+            <property name="text">
+             <string>Save Events to csv</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -413,6 +420,13 @@
            <widget class="QPushButton" name="btn_save_stations">
             <property name="text">
              <string>Save Selected Stations (XML)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_save_stations_csv">
+            <property name="text">
+             <string>Save Selected Stations (csv)</string>
             </property>
            </widget>
           </item>
@@ -716,6 +730,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_save_events</sender>
+   <signal>clicked()</signal>
+   <receiver>search_by_maps</receiver>
+   <slot>_on_btn_save_events_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>207</x>
+     <y>637</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>655</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>_show_waveforms()</slot>
@@ -728,5 +758,6 @@
   <slot>_save_stations()</slot>
   <slot>_save_waveforms()</slot>
   <slot>_on_btn_selectevent_tbl_clicked()</slot>
+  <slot>_on_btn_save_events_clicked()</slot>
  </slots>
 </ui>
