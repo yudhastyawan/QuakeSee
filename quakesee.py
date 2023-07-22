@@ -6,6 +6,9 @@ Feel free to use this program, thank you!
 
 from PyQt5 import QtWidgets, uic, QtCore
 import sys
+import matplotlib as mpl
+
+mpl.rcParams['savefig.dpi'] = 300
 
 class MainWindow(QtWidgets.QMainWindow):
     """
@@ -35,6 +38,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.load_data_waveforms.py_editor = self.py_editor
         self.load_data_stations.py_console = self.py_console
         self.load_data_stations.py_editor = self.py_editor
+        self.create_oq.py_console = self.py_console
+        
         self.search_by_maps._push_kernel()
         self.load_data_waveforms._push_kernel()
         self.load_data_stations._push_kernel()
@@ -52,7 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
             ],
             "Utilities": [
                 ["HVSR (X)", None],
-                ["Create OQ Inputs (X)", None],
+                ["Create OQ Inputs", 6],
                 ["Raspberry Shake (X)", None],
             ],
             "About": [

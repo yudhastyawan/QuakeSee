@@ -149,7 +149,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>5</number>
+        <number>6</number>
        </property>
        <widget class="SearchByMaps" name="search_by_maps"/>
        <widget class="About" name="about_references"/>
@@ -157,6 +157,7 @@
        <widget class="About" name="about_thisprogram"/>
        <widget class="LoadDataWaveforms" name="load_data_waveforms"/>
        <widget class="LoadDataStations" name="load_data_stations"/>
+       <widget class="CreateOQ" name="create_oq"/>
       </widget>
      </item>
     </layout>
@@ -378,6 +379,12 @@
    <class>LoadDataStations</class>
    <extends>QWidget</extends>
    <header>main_widgets.load_data_stations</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CreateOQ</class>
+   <extends>QWidget</extends>
+   <header>main_widgets.create_oq</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
