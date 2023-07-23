@@ -16,6 +16,9 @@ import pickle
 import matplotlib.pyplot as plt
 import geopandas as gpd
 import glob
+from libs.utils import TableModel
+import random
+from matplotlib.lines import Line2D
 
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'custom'
@@ -36,7 +39,6 @@ class CreateOQ(QtWidgets.QWidget):
             ],
             "Declustering": [
                 ["apply", "bool", None, None],
-                ["File path", "savepath", None, None, ("Save Catalogue", "", "ASCII Files (*.csv)")],
             ],
             "Mc": [
                 ["apply", "bool", None, None],
@@ -54,6 +56,7 @@ class CreateOQ(QtWidgets.QWidget):
             "Plot": [
                 ["M - T Density", "bool", None, None],
                 ["FMD", "bool", None, None],
+                ["Autosave (X)", "bool", None, None],
             ],
         }
 
@@ -68,10 +71,9 @@ class CreateOQ(QtWidgets.QWidget):
         self.tree_list['Map'][1][3].setText("o")
         self.tree_list['Map'][2][3].setText("5")
         self.tree_list['Map'][3][3].setText("red")
-        self.__MTfile = None
-        self.__FMDfile = None
-        self.__MCfile = None
-        self.__ABfile = None
+
+        self.__gdf_area = None
+        self.__dict_area_depth = {"upper depth": [], "lower depth": []}
 
         self.mpl_map_reset(self.map_view.mpl)
 
@@ -133,61 +135,67 @@ class CreateOQ(QtWidgets.QWidget):
                 os.remove(fname)
 
     def __apply_thread(self):
-        if self.tree_list["Declustering"][0][3].currentIndex() == 1:
-            inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
-            outputfile = self.tree_list['Declustering'][1][3].text.toPlainText()
-            self.declustering(inputfile, outputfile)
-        inputfile = None
-        if self.tree_list["Declustering"][0][3].currentIndex() == 0:
-            inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
-        else:
-            inputfile = self.tree_list['Declustering'][1][3].text.toPlainText()
+
+        inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
+        if inputfile == "": return
+
+        for fn in inputfile.split('\n'):
+            if self.tree_list["Declustering"][0][3].currentIndex() == 1:
+                ofile = os.path.join(self.txt_outdir.text(), os.path.splitext(os.path.split(fn)[-1])[0] + "_declustered.csv")
+                self.declustering(fn, ofile)
+                if os.path.isfile(fn): fn = ofile        
         
-        if self.tree_list["Mc"][0][3].currentIndex() == 1:
-            out, self.__MCfile = self.apply_func(MC, inputfile)
-            self._printLn(out)
-
-        if self.tree_list["a-b value"][0][3].currentIndex() == 1:
-            out, self.__ABfile = self.apply_func(ABvalue, [inputfile, self.__MCfile])
-            self._printLn(out)
-
-        if self.tree_list["Map"][0][3].currentIndex() == 1:
-            if self.chk_map_overwrite.isChecked(): self.mpl_map_reset(self.map_view.mpl)
-            df = pd.read_csv(inputfile)
-            ax = self.map_view.mpl.figure.axes[0]
-            marker = self.tree_list['Map'][1][3].toPlainText()
-            size = int(self.tree_list['Map'][2][3].toPlainText())
-            color = self.tree_list['Map'][3][3].toPlainText()
-            ax.scatter(df["longitude"], df["latitude"], c=color, marker=marker, s=size)
-            self.map_view.mpl.draw()
-        
-        if self.tree_list["Plot"][0][3].currentIndex() == 1:
-            out, self.__MTfile = self.apply_func(MTdensity, inputfile)
-            self._printLn(out)
-
-        if self.tree_list["Plot"][1][3].currentIndex() == 1:
-            if self.tree_list["a-b value"][0][3].currentIndex() == 0:
-                out, self.__FMDfile = self.apply_func(FMD, inputfile)
+            if self.tree_list["Mc"][0][3].currentIndex() == 1:
+                out, _ = self.apply_func(MC, fn)
                 self._printLn(out)
-            else:
-                out, self.__FMDfile = self.apply_func(FMD_AB, [inputfile, self.__ABfile])
-                self._printLn(out)            
+
+            if self.tree_list["a-b value"][0][3].currentIndex() == 1:
+                out, _ = self.apply_func(ABvalue, fn)
+                self._printLn(out)
+
+            if self.tree_list["Map"][0][3].currentIndex() == 1:
+                if self.chk_map_overwrite.isChecked(): self.mpl_map_reset(self.map_view.mpl)
+                df = pd.read_csv(fn)
+                ax = self.map_view.mpl.figure.axes[0]
+                marker = self.tree_list['Map'][1][3].toPlainText()
+                size = int(self.tree_list['Map'][2][3].toPlainText())
+                color = self.tree_list['Map'][3][3].toPlainText()
+                ax.scatter(df["longitude"], df["latitude"], c=color, marker=marker, s=size)
+                self.map_view.mpl.draw()
+            
+            if self.tree_list["Plot"][0][3].currentIndex() == 1:
+                out, _ = self.apply_func(MTdensity, fn)
+                self._printLn(out)
+
+            if self.tree_list["Plot"][1][3].currentIndex() == 1:
+                if self.tree_list["a-b value"][0][3].currentIndex() == 0:
+                    out, _ = self.apply_func(FMD, fn)
+                    self._printLn(out)
+                else:
+                    out, _ = self.apply_func(FMD_AB, fn)
+                    self._printLn(out)
 
     def __plot_show(self):
         chk = 0
-        if self.tree_list["Plot"][0][3].currentIndex() == 1:
-            if self.tree_list["Mc"][0][3].currentIndex() == 0:
-                plot_MTdensity([self.__MTfile])
-            else:
-                plot_MTdensity([self.__MTfile, self.__MCfile])
-            chk = 1
         
-        if self.tree_list["Plot"][1][3].currentIndex() == 1:
-            if self.tree_list["a-b value"][0][3].currentIndex() == 0:
-                plot_FMD(self.__FMDfile)
-            else:
-                plot_FMD_AB(self.__FMDfile)
-            chk = 1
+        inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
+        if inputfile == "": return
+
+        for fn in inputfile.split('\n'):
+            if self.tree_list["Declustering"][0][3].currentIndex() == 1:
+                ofile = os.path.join(self.txt_outdir.text(), os.path.splitext(os.path.split(fn)[-1])[0] + "_declustered.csv")
+                if os.path.isfile(fn): fn = ofile
+
+            if self.tree_list["Plot"][0][3].currentIndex() == 1:
+                plot_MTdensity(fn)
+                chk = 1
+        
+            if self.tree_list["Plot"][1][3].currentIndex() == 1:
+                if self.tree_list["a-b value"][0][3].currentIndex() == 0:
+                    plot_FMD(fn)
+                else:
+                    plot_FMD_AB(fn)
+                chk = 1
         
         if chk:
             plt.show()
@@ -198,3 +206,82 @@ class CreateOQ(QtWidgets.QWidget):
             try:
                 self.txt_python_path.setText(fileName)
             except: pass
+
+    def _on_btn_load_shp_clicked(self):
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Shape File", "", "SHP File (*.shp)")
+        if fileName:
+            try:
+                gdf = gpd.read_file(fileName)
+                gdf["filename"] = os.path.split(fileName)[-1]
+                if self.chk_area_shp_overwrite.isChecked():
+                    self.__gdf_area = gdf
+                else:
+                    self.__gdf_area = gpd.GeoDataFrame(pd.concat([self.__gdf_area, gdf], ignore_index=True))
+                gdf = self.__gdf_area.drop(columns='geometry')
+                gdf['geometry'] = [geom.geom_type for geom in self.__gdf_area.geometry]
+                table_model = TableModel(gdf)
+                self.table_area.setModel(table_model)
+                self.table_area.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+                self.table_area.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+            except: pass
+
+    def _on_btn_area_dep2tbl_clicked(self):
+        self.__dict_area_depth["upper depth"].append(float(self.txt_area_Z1.text()))
+        self.__dict_area_depth["lower depth"].append(float(self.txt_area_Z2.text()))
+        df = pd.DataFrame.from_dict(self.__dict_area_depth)
+        table_model = TableModel(df)
+        self.table_area_depth.setModel(table_model)
+        self.table_area_depth.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_area_depth.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+
+    def _on_btn_area_cut_clicked(self):
+        self.prog_apply.setValue(50)
+        self.thread = QtCore.QThread()
+        self.worker = Worker(self.__area_cut)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.start()
+
+        self.worker.finished.connect(lambda: self.__delete_pkl())
+        self.worker.finished.connect(lambda: self.prog_apply.setValue(100))
+
+    def __area_cut(self):
+        inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
+        outputdir = self.txt_outdir.text()
+        geom_rows = [idx.row() for idx in self.table_area.selectionModel().selectedRows()]
+        area_geoms = [
+            geom.exterior.xy for geom in self.__gdf_area.iloc[geom_rows].geometry
+        ]
+        if geom_rows:
+            for fn in inputfile.split('\n'):
+                area_cut(self.__pybin(), fn, outputdir, area_geoms, self.__dict_area_depth)
+
+    def _on_btn_outdir_clicked(self):
+        dir_name = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a Directory")
+        if dir_name:
+            self.txt_outdir.setText(dir_name)
+
+    def _on_btn_area_depth_clear_clicked(self):
+        self.__dict_area_depth = {"upper depth": [], "lower depth": []}
+        df = pd.DataFrame.from_dict(self.__dict_area_depth)
+        table_model = TableModel(df)
+        self.table_area_depth.setModel(table_model)
+        self.table_area_depth.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_area_depth.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+
+    def _on_btn_area_load_preview_clicked(self):
+        ax = self.area_preview.mpl.figure.axes[0]
+        ax.cla()
+        geom_rows = [idx.row() for idx in self.table_area.selectionModel().selectedRows()]
+        get_colors = lambda n: ["#%06x" % random.randint(0, 0xFFFFFF) for _ in range(n)]
+        if geom_rows:
+            clrs = get_colors(len(geom_rows))
+            self.__gdf_area.iloc[geom_rows].plot(color='none', edgecolor=clrs, 
+                                                 linewidth=1, ax=ax)
+            lines = [Line2D([0], [0], linestyle="none", marker="s", markersize=10, 
+               markeredgecolor=clr, markerfacecolor='none') for clr in clrs]
+            ax.legend(lines, geom_rows)
+        self.area_preview.mpl.draw()

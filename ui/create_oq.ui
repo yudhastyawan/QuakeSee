@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>895</width>
-    <height>484</height>
+    <width>1634</width>
+    <height>614</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -106,6 +106,16 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="txt_outdir"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_outdir">
+       <property name="text">
+        <string>Output Directory</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -229,7 +239,7 @@
            <item>
             <widget class="QPushButton" name="btn_create_poly">
              <property name="text">
-              <string>Create Polygon</string>
+              <string>Create Polygon (X)</string>
              </property>
             </widget>
            </item>
@@ -252,17 +262,273 @@
        </widget>
        <widget class="QWidget" name="tab_fault">
         <attribute name="title">
-         <string>Fault</string>
+         <string>Fault (X)</string>
         </attribute>
        </widget>
        <widget class="QWidget" name="tab_area">
         <attribute name="title">
          <string>Area</string>
         </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <property name="spacing">
+          <number>-1</number>
+         </property>
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>20</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_7">
+             <item>
+              <widget class="QLabel" name="label_6">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Geometries</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableView" name="table_area"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_5">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Preview</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="MplCanvasBaseWithToolbar" name="area_preview" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>200</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <widget class="QLabel" name="label_2">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Ranges of Depth</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_4">
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                   <item>
+                    <widget class="QLabel" name="label_3">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Upper Depth (km)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="txt_area_Z1"/>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_8">
+                   <item>
+                    <widget class="QLabel" name="label_4">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Lower Depth (km)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="txt_area_Z2"/>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_3">
+                 <item>
+                  <widget class="QPushButton" name="btn_area_dep2tbl">
+                   <property name="text">
+                    <string>&gt;&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QTableView" name="table_area_depth"/>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <item>
+                <widget class="QPushButton" name="btn_area_depth_clear">
+                 <property name="text">
+                  <string>Clear</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QCheckBox" name="chk_area_shp_overwrite">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>overwrite</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_load_shp">
+             <property name="text">
+              <string>Load shape file</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_area_load_preview">
+             <property name="text">
+              <string>Load in Preview</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_area_cut">
+             <property name="text">
+              <string>Delineate seismicity</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
        <widget class="QWidget" name="tab_megathrust">
         <attribute name="title">
-         <string>Megathrust</string>
+         <string>Megathrust (X)</string>
         </attribute>
        </widget>
       </widget>
@@ -286,6 +552,12 @@
    <class>TreeOQ</class>
    <extends>QTreeView</extends>
    <header>widgets.treeoq</header>
+  </customwidget>
+  <customwidget>
+   <class>MplCanvasBaseWithToolbar</class>
+   <extends>QWidget</extends>
+   <header>widgets.mplcanvas</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -322,9 +594,112 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_load_shp</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_load_shp_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>551</x>
+     <y>368</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>447</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_area_dep2tbl</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_area_dep2tbl_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1530</x>
+     <y>238</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_area_cut</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_area_cut_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1197</x>
+     <y>593</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_outdir</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_outdir_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1221</x>
+     <y>78</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_area_depth_clear</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_area_depth_clear_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1275</x>
+     <y>433</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_area_load_preview</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_area_load_preview_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1143</x>
+     <y>593</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>_on_btn_apply_clicked()</slot>
   <slot>_on_btn_python_path_clicked()</slot>
+  <slot>_on_btn_load_shp_clicked()</slot>
+  <slot>_on_btn_area_dep2tbl_clicked()</slot>
+  <slot>_on_btn_area_cut_clicked()</slot>
+  <slot>_on_btn_outdir_clicked()</slot>
+  <slot>_on_btn_area_clear_clicked()</slot>
+  <slot>_on_btn_area_depth_clear_clicked()</slot>
+  <slot>_on_btn_area_load_preview_clicked()</slot>
  </slots>
 </ui>
