@@ -88,6 +88,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.about_thisprogram.filename = "./mdfiles/thisprogram.md"
         self.about_thisprogram.get_markdown()
 
+        # Menu bar
+        self.actionReset_Map.triggered.connect(self.search_by_maps._on_btn_map_reset)
+        self.actionSave_Available_Events_csv.triggered.connect(self.search_by_maps._on_btn_save_events_clicked)
+        self.actionSave_Selected_Stations_XML.triggered.connect(self.search_by_maps._save_stations)
+        self.actionSave_Selected_Stations_csv.triggered.connect(self.search_by_maps._on_btn_save_stations_csv_clicked)
+        self.actionSave_Waveforms_mseed.triggered.connect(self.search_by_maps._save_waveforms)
+        self.actionClear_New_Windows.triggered.connect(self.load_data_waveforms._on_btn_clear_windows_clicked)
+        self.actionReverse_Strike_in_Selected_Geometries.triggered.connect(self.create_oq.reverse_strike_in_selected_geometries)
+        self.actionConvert_Lonlat_to_Distance_3D.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(True))
+        self.actionPreview_3D_Lon_Lat_degree.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(False))
+
     def run_kernel(self):
         self.py_console.run_kernel(self.py_editor.toPlainText())
         self.dock_console.raise_()

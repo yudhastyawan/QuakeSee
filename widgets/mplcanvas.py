@@ -18,6 +18,13 @@ class MplCanvasBase(FigureCanvasQTAgg):
         self.axes = fig.add_subplot(111)
         super(MplCanvasBase, self).__init__(fig)
 
+class MplCanvasBase3D(FigureCanvasQTAgg):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111, projection='3d')
+        super(MplCanvasBase3D, self).__init__(fig)
+
 class MplCanvasMap(MplCanvasBase):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi, layout="constrained")
@@ -99,6 +106,19 @@ class MplCanvasBaseWithToolbar(QtWidgets.QWidget):
         self.vlayout.setContentsMargins(0,0,0,0)
         self.vlayout.setSpacing(0)
         self.mpl = MplCanvasBase()
+        self.toolbar = NavigationToolbar2QT(self.mpl, self)
+        self.vlayout.addWidget(self.toolbar)
+        self.vlayout.addWidget(self.mpl)
+        self.setLayout(self.vlayout)
+
+class MplCanvasBase3DWithToolbar(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)
+
+        self.vlayout = QtWidgets.QVBoxLayout()
+        self.vlayout.setContentsMargins(0,0,0,0)
+        self.vlayout.setSpacing(0)
+        self.mpl = MplCanvasBase3D()
         self.toolbar = NavigationToolbar2QT(self.mpl, self)
         self.vlayout.addWidget(self.toolbar)
         self.vlayout.addWidget(self.mpl)

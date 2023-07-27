@@ -14,6 +14,7 @@ from openquake.hmtk.plotting.seismicity.completeness.plot_stepp_1972 import crea
 from openquake.hmtk.seismicity.smoothing.smoothed_seismicity import SmoothedSeismicity
 from openquake.hmtk.seismicity.smoothing.kernels.isotropic_gaussian import IsotropicGaussian
 from openquake.hazardlib.geo.surface.complex_fault import ComplexFaultSurface
+from openquake.hazardlib.geo.surface.simple_fault import SimpleFaultSurface
 from openquake.hmtk.sources.area_source import mtkAreaSource
 from openquake.hmtk.sources.simple_fault_source import mtkSimpleFaultSource
 from openquake.hmtk.sources.complex_fault_source import mtkComplexFaultSource

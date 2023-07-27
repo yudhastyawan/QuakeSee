@@ -262,8 +262,248 @@
        </widget>
        <widget class="QWidget" name="tab_fault">
         <attribute name="title">
-         <string>Fault (X)</string>
+         <string>Fault</string>
         </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_12">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_9">
+             <item>
+              <widget class="QLabel" name="label_7">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Geometries</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableView" name="table_fault"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Preview</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="MplCanvasBaseWithToolbar" name="fault_preview" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>200</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="Line" name="line_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_10">
+             <item>
+              <widget class="QLabel" name="label_10">
+               <property name="maximumSize">
+                <size>
+                 <width>400</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Properties</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableWidget" name="table_fault_props">
+               <property name="maximumSize">
+                <size>
+                 <width>400</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <column>
+                <property name="text">
+                 <string>Z1</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Z2</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Dip</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Distance</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_9">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Preview 3D</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="MplCanvasBase3DWithToolbar" name="fault_preview_3D" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>200</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>400</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <item>
+            <widget class="QCheckBox" name="chk_fault_shp_overwrite">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>overwrite</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_fault_shp">
+             <property name="text">
+              <string>Load shape file</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_fault_load_preview">
+             <property name="text">
+              <string>Load in Preview</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chk_fault_view_3D">
+             <property name="text">
+              <string>View in 3D</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_fault_cut">
+             <property name="text">
+              <string>Delineate seismicity</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
        <widget class="QWidget" name="tab_area">
         <attribute name="title">
@@ -559,6 +799,12 @@
    <header>widgets.mplcanvas</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>MplCanvasBase3DWithToolbar</class>
+   <extends>QWidget</extends>
+   <header>widgets.mplcanvas</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
@@ -690,6 +936,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_fault_shp</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_fault_shp_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1017</x>
+     <y>568</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_fault_load_preview</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_fault_load_preview_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1155</x>
+     <y>568</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_fault_cut</sender>
+   <signal>clicked()</signal>
+   <receiver>create_oq</receiver>
+   <slot>_on_btn_fault_cut_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1308</x>
+     <y>568</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>table_fault_props</sender>
+   <signal>cellChanged(int,int)</signal>
+   <receiver>create_oq</receiver>
+   <slot>_table_fault_props_onCellChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1337</x>
+     <y>198</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>816</x>
+     <y>306</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>_on_btn_apply_clicked()</slot>
@@ -701,5 +1011,9 @@
   <slot>_on_btn_area_clear_clicked()</slot>
   <slot>_on_btn_area_depth_clear_clicked()</slot>
   <slot>_on_btn_area_load_preview_clicked()</slot>
+  <slot>_on_btn_fault_shp_clicked()</slot>
+  <slot>_on_btn_fault_load_preview_clicked()</slot>
+  <slot>_on_btn_fault_cut_clicked()</slot>
+  <slot>_table_fault_props_onCellChanged()</slot>
  </slots>
 </ui>

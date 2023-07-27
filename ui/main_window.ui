@@ -44,6 +44,58 @@
      <height>24</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuAdditional_Tools">
+    <property name="title">
+     <string>Additional Tools</string>
+    </property>
+    <widget class="QMenu" name="menuSearch_By_Maps">
+     <property name="title">
+      <string>Search By Maps</string>
+     </property>
+     <widget class="QMenu" name="menuSelect_Event">
+      <property name="title">
+       <string>Select Event</string>
+      </property>
+      <addaction name="actionReset_Map"/>
+      <addaction name="actionSave_Available_Events_csv"/>
+     </widget>
+     <widget class="QMenu" name="menuSelect_Stations">
+      <property name="title">
+       <string>Select Stations</string>
+      </property>
+      <addaction name="actionSave_Selected_Stations_XML"/>
+      <addaction name="actionSave_Selected_Stations_csv"/>
+      <addaction name="actionSave_Waveforms_mseed"/>
+     </widget>
+     <addaction name="menuSelect_Event"/>
+     <addaction name="menuSelect_Stations"/>
+    </widget>
+    <widget class="QMenu" name="menuLoad_Waveform_Data">
+     <property name="title">
+      <string>Load Waveform Data</string>
+     </property>
+     <addaction name="actionClear_New_Windows"/>
+    </widget>
+    <widget class="QMenu" name="menuCreate_OQ_Inputs">
+     <property name="title">
+      <string>Create OQ Inputs</string>
+     </property>
+     <widget class="QMenu" name="menuFault">
+      <property name="title">
+       <string>Fault</string>
+      </property>
+      <addaction name="actionConvert_Lonlat_to_Distance_3D"/>
+      <addaction name="actionPreview_3D_Lon_Lat_degree"/>
+      <addaction name="actionReverse_Strike_in_Selected_Geometries"/>
+     </widget>
+     <addaction name="menuFault"/>
+    </widget>
+    <addaction name="menuSearch_By_Maps"/>
+    <addaction name="menuLoad_Waveform_Data"/>
+    <addaction name="separator"/>
+    <addaction name="menuCreate_OQ_Inputs"/>
+   </widget>
+   <addaction name="menuAdditional_Tools"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dock_side">
@@ -335,6 +387,61 @@
     </layout>
    </widget>
   </widget>
+  <action name="actionSearch_By_Maps">
+   <property name="text">
+    <string>Search By Maps</string>
+   </property>
+  </action>
+  <action name="actionReset_Map">
+   <property name="text">
+    <string>Reset Map</string>
+   </property>
+  </action>
+  <action name="actionSave_Selected_Stations_XML">
+   <property name="text">
+    <string>Save Selected Stations (XML)</string>
+   </property>
+  </action>
+  <action name="actionSave_Selected_Stations_csv">
+   <property name="text">
+    <string>Save Selected Stations (csv)</string>
+   </property>
+  </action>
+  <action name="actionSave_Waveforms_mseed">
+   <property name="text">
+    <string>Save Waveforms (mseed)</string>
+   </property>
+  </action>
+  <action name="actionSave_Available_Events_csv">
+   <property name="text">
+    <string>Save Available Events (csv)</string>
+   </property>
+  </action>
+  <action name="actionClear_New_Windows">
+   <property name="text">
+    <string>Clear New Windows</string>
+   </property>
+  </action>
+  <action name="actionConvert_Lonlat_to_Distance">
+   <property name="text">
+    <string>Convert Lonlat to Distance (3D)</string>
+   </property>
+  </action>
+  <action name="actionConvert_Lonlat_to_Distance_3D">
+   <property name="text">
+    <string>Preview 3D (Local Coordinates (km))</string>
+   </property>
+  </action>
+  <action name="actionReverse_Strike_in_Selected_Geometries">
+   <property name="text">
+    <string>Reverse Strike in Selected Geometries</string>
+   </property>
+  </action>
+  <action name="actionPreview_3D_Lon_Lat_degree">
+   <property name="text">
+    <string>Preview 3D (Lon Lat (degree))</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

@@ -426,7 +426,7 @@
           <item>
            <widget class="QPushButton" name="btn_save_stations_csv">
             <property name="text">
-             <string>Save Selected Stations (csv)</string>
+             <string>Save Selected Stations (csv) (X)</string>
             </property>
            </widget>
           </item>
@@ -509,15 +509,15 @@
    </slots>
   </customwidget>
   <customwidget>
-   <class>DateTimeEdit</class>
-   <extends>QDateTimeEdit</extends>
-   <header>widgets.datetimeedit</header>
-  </customwidget>
-  <customwidget>
    <class>MplCanvasBaseWithToolbar</class>
    <extends>QWidget</extends>
    <header>widgets.mplcanvas</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DateTimeEdit</class>
+   <extends>QDateTimeEdit</extends>
+   <header>widgets.datetimeedit</header>
   </customwidget>
  </customwidgets>
  <resources/>
