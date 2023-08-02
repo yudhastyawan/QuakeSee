@@ -4,7 +4,9 @@ A GUI-based program to see distribution of events, stations, and seismograms ava
 ## How to Use
 Install the reqired packages in `requirements.txt` and run `quakesee.py` in your Python. Enjoy!
 
-Detail:
+> **Notes:** We use python 3.10
+
+### Detail Instruction
 
 1. Install miniconda/anaconda
 2. Open Anaconda prompt (run as administrator) in Windows / Open terminal in Linux or Mac
@@ -17,8 +19,6 @@ Detail:
 9. Run command `pip install -r requirements.txt`
 10. Run command `python quakesee.py`
 11. Enjoy! 
-
-> **Notes:** We use python 3.10
 
 ## To-Do Lists
 - [x] Expand to a bigger software
