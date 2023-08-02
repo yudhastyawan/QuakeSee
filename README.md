@@ -8,7 +8,7 @@ Install the reqired packages in `requirements.txt` and run `quakesee.py` in your
 
 ### Detail Instruction
 
-1. Install miniconda/anaconda
+1. Install miniconda/anaconda (Download [miniconda](https://docs.conda.io/en/latest/miniconda.html))
 2. Open Anaconda prompt (run as administrator) in Windows / Open terminal in Linux or Mac
 3. Make sure Anaconda is active by seeing `(base)`
 4. Run command `conda create -n quakesee python=3.10`
