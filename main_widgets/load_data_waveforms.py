@@ -96,7 +96,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             "_wave":self,
             "wave_configs":self.configs,
             "wave_data":self.data,
-            "wave_configs_reset":self.reset_configs
+            "wave_configs_reset":self.reset_configs,
+            "_wave_mpl_plot":self.tab_waveplots.widgetCanvas.mpl
         }
 
         self.__new_windows = []
@@ -364,7 +365,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                     stlon = inv_sel[0][0]._longitude
                     stlat = inv_sel[0][0]._latitude
                     _,_,dist = g.inv(evlon,evlat,stlon,stlat)
-                    depth = float(self.tree_list["Event"][3][3].toPlainText()) * 1000
+                    depth = float(self.tree_list["Event"][3][3].text()) * 1000
                     tr.stats.distance = np.sqrt(np.power(dist, 2) + np.power(depth, 2))
                     selected_traces.append(tr)
                     starttimes.append(tr.stats.starttime)
@@ -440,16 +441,16 @@ class LoadDataWaveforms(QtWidgets.QWidget):
     def __precondition_waveforms(self):
         if self.tree_list["Selection"][0][3].currentIndex() == 1:
             st = None
-            for net in self.tree_list["Selection"][1][3].toPlainText().split(','):
-                for stat in self.tree_list["Selection"][2][3].toPlainText().split(','):
+            for net in self.tree_list["Selection"][1][3].text().split(','):
+                for stat in self.tree_list["Selection"][2][3].text().split(','):
                     net = net.replace(' ', '')
                     stat = stat.replace(' ', '')
                     self.__worker_progress(stat)
                     tr = self.data["waveforms"].select(network=net,
                                                 station=stat,
-                                                location=self.tree_list["Selection"][3][3].toPlainText(),
-                                                channel=self.tree_list["Selection"][4][3].toPlainText(),
-                                                component=self.tree_list["Selection"][5][3].toPlainText())
+                                                location=self.tree_list["Selection"][3][3].text(),
+                                                channel=self.tree_list["Selection"][4][3].text(),
+                                                component=self.tree_list["Selection"][5][3].text())
                     if st == None:
                         st = tr
                     else:
@@ -476,11 +477,11 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             self.__worker_progress("filtering waveform data . . .")
             fmin, fmax = [None, None]
             try:
-                fmin = float(self.tree_list["Filter"][1][3].toPlainText())
+                fmin = float(self.tree_list["Filter"][1][3].text())
             except:
                 fmin = None
             try:
-                fmax = float(self.tree_list["Filter"][2][3].toPlainText())
+                fmax = float(self.tree_list["Filter"][2][3].text())
             except:
                 fmax = None
             if fmin != None and fmax != None:
@@ -508,11 +509,11 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             delta_t = self.data['origin time'] - self.data['minimum starttime']
             vs, vp = [None, None]
             try:
-                vp = float(self.tree_list["Time vs. Offsets"][2][3].toPlainText())
+                vp = float(self.tree_list["Time vs. Offsets"][2][3].text())
             except:
                 vp = None
             try:
-                vs = float(self.tree_list["Time vs. Offsets"][3][3].toPlainText())
+                vs = float(self.tree_list["Time vs. Offsets"][3][3].text())
             except:
                 vs = None
             if vp != None and vs != None:
@@ -588,8 +589,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 if self.tree_list["Stations"][2][3].currentIndex() == 1:
                     self.data["event coordinate"] = [None, None]
                     try:
-                        evlon = float(self.tree_list["Event"][1][3].toPlainText())
-                        evlat = float(self.tree_list["Event"][2][3].toPlainText())
+                        evlon = float(self.tree_list["Event"][1][3].text())
+                        evlat = float(self.tree_list["Event"][2][3].text())
                         self.data["event coordinate"] = [evlon, evlat]
                         self.__worker_progress(f"a selected event (lon, lat): {self.data['event coordinate']}")
                     except:
@@ -685,8 +686,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
 
     def _on_btn_extract_est_phase_clicked(self):
         df = self.__phase_df
-        vp = float(self.tree_list["Time vs. Offsets"][2][3].toPlainText())
-        vs = float(self.tree_list["Time vs. Offsets"][3][3].toPlainText())
+        vp = float(self.tree_list["Time vs. Offsets"][2][3].text())
+        vs = float(self.tree_list["Time vs. Offsets"][3][3].text())
         for ph, vv in zip(["P", "S"], [vp, vs]):
             for tr in self.data["selected waveforms"]:
                 sta = tr.stats

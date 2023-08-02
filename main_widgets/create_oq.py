@@ -100,7 +100,7 @@ class CreateOQ(QtWidgets.QWidget):
         self.mpl_map_reset(self.map_view.mpl)
 
         # check_shell
-        if self.txt_python_path.toPlainText() != "": self.__chk_shell = self.check_shell()
+        if self.txt_python_path.text() != "": self.__chk_shell = self.check_shell()
 
     def check_shell(self):
         if os.path.isfile(self.__pybin()):
@@ -130,7 +130,7 @@ class CreateOQ(QtWidgets.QWidget):
         mpl.draw()
 
     def __pybin(self):
-        return self.txt_python_path.toPlainText()
+        return self.txt_python_path.text()
 
     def declustering(self, inputfile, outputfile, chk=1):
         output = declustering(self.__pybin(), inputfile, outputfile, chk=chk)
@@ -214,9 +214,9 @@ class CreateOQ(QtWidgets.QWidget):
                 if self.chk_map_overwrite.isChecked(): self.mpl_map_reset(self.map_view.mpl)
                 df = pd.read_csv(fn)
                 ax = self.map_view.mpl.figure.axes[0]
-                marker = self.tree_list['Map'][1][3].toPlainText()
-                size = int(self.tree_list['Map'][2][3].toPlainText())
-                color = self.tree_list['Map'][3][3].toPlainText()
+                marker = self.tree_list['Map'][1][3].text()
+                size = int(self.tree_list['Map'][2][3].text())
+                color = self.tree_list['Map'][3][3].text()
                 ax.scatter(df["longitude"], df["latitude"], c=color, marker=marker, s=size)
                 self.map_view.mpl.draw()
 

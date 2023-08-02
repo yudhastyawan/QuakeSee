@@ -45,8 +45,7 @@ class TreeOQ(QtWidgets.QTreeView):
                         txt[3].setDisplayFormat("dd/MM/yyyy HH:mm:ss")
                         txt[3].setDateTime(QtCore.QDateTime.currentDateTime())
                     elif txt[1] == "number":
-                        txt[3] = QtWidgets.QTextEdit()
-                        txt[3].setMaximumHeight(20)
+                        txt[3] = QtWidgets.QLineEdit()
                     tree_parent.appendRow(tree_childs)
             self.tree_model.appendRow(tree_parent)
             self.tree_model.setData(tree_parent.index(), font, QtCore.Qt.FontRole)
@@ -69,8 +68,8 @@ class QTextAndButton(QtWidgets.QWidget):
 
         self.text = QtWidgets.QTextEdit()
         self.text.setMaximumHeight(50)
-        self.button = QtWidgets.QToolButton()
-        self.button.setMaximumHeight(20)
+        self.button = QtWidgets.QPushButton()
+        # self.button.setMaximumHeight(20)
         lay.addWidget(self.text)
         vlay.addWidget(self.button)
         vlay.addStretch(1)

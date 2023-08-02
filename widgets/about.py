@@ -14,6 +14,6 @@ class About(QtWidgets.QWidget):
 
     def get_markdown(self):
         if self.filename != None:
-            with open(self.filename, 'r') as f:
+            with open(self.filename, 'r', encoding="utf8") as f:
                 mdtext = f.read()
             self.text.setMarkdown(mdtext)
