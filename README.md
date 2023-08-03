@@ -39,6 +39,7 @@ path_OQ:
 - [x] Add a utility to plot time vs offsets in loaded waveform data
 - [ ] Complete descriptions of "References", "How to Contribute", and "This Program"
 - [ ] Add a utility to download ISC catalogues
+- [ ] Convert ISC catalogue to OpenQuake catalogue
 - [ ] Add a utility to load station/inventory data in *.xml
 - [ ] Add a utility to plot station/inventory responses
 - [ ] Add a utility to conduct HVSR analysis
