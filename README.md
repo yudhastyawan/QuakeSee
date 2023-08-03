@@ -18,7 +18,19 @@ Install the reqired packages in `requirements.txt` and run `quakesee.py` in your
 8. Locate Anaconda prompt/Terminal to the extracted folder by command `cd "locate/to/folder"`
 9. Run command `pip install -r requirements.txt`
 10. Run command `python quakesee.py`
-11. Enjoy! 
+11. Enjoy!
+
+### Create OQ Inputs
+Before using the **Create OQ Inputs** feature, we need to:
+1. Install OpenQuake ([download](https://downloads.openquake.org/pkgs/windows/oq-engine/))
+2. Open `user.yaml` file, change the contents:
+```
+path_OQ:
+  python: "path/to/openquake/python/executable/file"
+  outputdir: "/path/to/output/destination/file/directory"
+```
+3. Run command `python quakesee.py` (see detail instruction)
+4. Enjoy!
 
 ## To-Do Lists
 - [x] Expand to a bigger software
