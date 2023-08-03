@@ -109,6 +109,16 @@ class CreateOQ(QtWidgets.QWidget):
             if not os.path.isdir(self.txt_outdir.text()): 
                 MBoxLbl("Make sure the output directory is exist!", self)
 
+        self.txt_python_path.textChanged[str].connect(self.__check_chk_shell)
+
+    def __check_chk_shell(self, txt):
+        if os.path.isfile(txt):
+            self.__chk_shell = check_shell(txt)
+            if self.__chk_shell == 0:
+                MBoxLbl("Make sure the Python path is exist", self)
+        else:
+            MBoxLbl("The Python path is not exist", self)
+
     def check_shell(self):
         if os.path.isfile(self.__pybin()):
             return check_shell(self.__pybin())
@@ -157,7 +167,6 @@ class CreateOQ(QtWidgets.QWidget):
             MBoxLbl("Make sure the output directory is exist!", self)
             return
         
-        self.__chk_shell = self.check_shell()
         if self.__chk_shell == 0: 
             MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
             return
@@ -257,8 +266,6 @@ class CreateOQ(QtWidgets.QWidget):
         if fileName:
             try:
                 self.txt_python_path.setText(fileName)
-                self.__chk_shell = self.check_shell()
-                if self.__chk_shell == 0: MBox("Check Python Path!", "Make sure OpenQuake Python is exist.", self)
             except: pass
 
     def _on_btn_load_shp_clicked(self):
@@ -332,7 +339,6 @@ class CreateOQ(QtWidgets.QWidget):
             MBoxLbl("Make sure the output directory is exist!", self)
             return
         
-        self.__chk_shell = self.check_shell()
         if self.__chk_shell == 0: 
             MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
             return
@@ -368,7 +374,6 @@ class CreateOQ(QtWidgets.QWidget):
             MBoxLbl("Make sure the output directory is exist!", self)
             return
         
-        self.__chk_shell = self.check_shell()
         if self.__chk_shell == 0: 
             MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
             return
@@ -411,7 +416,6 @@ class CreateOQ(QtWidgets.QWidget):
             MBoxLbl("Make sure the output directory is exist!", self)
             return
         
-        self.__chk_shell = self.check_shell()
         if self.__chk_shell == 0: 
             MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
             return
