@@ -3,6 +3,7 @@ import obspy as ob
 import os
 from libs.commons import Worker
 from libs.utils import TableModel
+from widgets.messagebox import MBox, MBoxLbl
 from widgets.mplcanvas import MplCanvasBaseWithToolbar
 from obspy.clients.fdsn.header import URL_MAPPINGS
 from obspy.clients.fdsn.client import Client
@@ -100,7 +101,13 @@ class CreateOQ(QtWidgets.QWidget):
         self.mpl_map_reset(self.map_view.mpl)
 
         # check_shell
-        if self.txt_python_path.text() != "": self.__chk_shell = self.check_shell()
+        if self.txt_python_path.text() != "": 
+            self.__chk_shell = self.check_shell()
+            if self.__chk_shell == 0: MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
+
+        if self.txt_outdir.text() != "":
+            if not os.path.isdir(self.txt_outdir.text()): 
+                MBoxLbl("Make sure the output directory is exist!", self)
 
     def check_shell(self):
         if os.path.isfile(self.__pybin()):
@@ -145,6 +152,16 @@ class CreateOQ(QtWidgets.QWidget):
         return output
 
     def _on_btn_apply_clicked(self):
+        outdir = self.txt_outdir.text()
+        if not os.path.isdir(outdir): 
+            MBoxLbl("Make sure the output directory is exist!", self)
+            return
+        
+        self.__chk_shell = self.check_shell()
+        if self.__chk_shell == 0: 
+            MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
+            return
+
         self.prog_apply.setValue(50)
         self.thread = QtCore.QThread()
         self.worker = Worker(self.__apply_thread)
@@ -167,13 +184,14 @@ class CreateOQ(QtWidgets.QWidget):
 
     def __apply_thread(self):
         chk = self.__chk_shell
+        outdir = self.txt_outdir.text()
 
         inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
         if inputfile == "": return
 
         for fn in inputfile.split('\n'):
             if self.tree_list["Declustering"][0][3].currentIndex() == 1:
-                ofile = os.path.join(self.txt_outdir.text(), os.path.splitext(os.path.split(fn)[-1])[0] + "_declustered.csv")
+                ofile = os.path.join(outdir, os.path.splitext(os.path.split(fn)[-1])[0] + "_declustered.csv")
                 self.declustering(fn, ofile, chk=chk)
                 if os.path.isfile(fn): fn = ofile        
         
@@ -240,6 +258,7 @@ class CreateOQ(QtWidgets.QWidget):
             try:
                 self.txt_python_path.setText(fileName)
                 self.__chk_shell = self.check_shell()
+                if self.__chk_shell == 0: MBox("Check Python Path!", "Make sure OpenQuake Python is exist.", self)
             except: pass
 
     def _on_btn_load_shp_clicked(self):
@@ -258,7 +277,7 @@ class CreateOQ(QtWidgets.QWidget):
                 self.table_area.setModel(table_model)
                 self.table_area.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
                 self.table_area.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
-            except: pass
+            except: MBoxLbl("Error Loading *.shp file!", self)
     
     def _on_btn_fault_shp_clicked(self):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Shape File", "", "SHP File (*.shp)")
@@ -291,7 +310,7 @@ class CreateOQ(QtWidgets.QWidget):
                         self.table_fault_props.setItem(r, c, QtWidgets.QTableWidgetItem(x))
 
                 self.table_fault_props.setVerticalHeaderLabels([str(s) for s in range(nRows)])
-            except: pass
+            except: MBoxLbl("Error Loading *.shp file!", self)
 
     def _table_fault_props_onCellChanged(self, row, column):
         text = self.table_fault_props.item(row, column).text()
@@ -308,6 +327,16 @@ class CreateOQ(QtWidgets.QWidget):
         self.table_area_depth.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
 
     def _on_btn_area_cut_clicked(self):
+        outdir = self.txt_outdir.text()
+        if not os.path.isdir(outdir): 
+            MBoxLbl("Make sure the output directory is exist!", self)
+            return
+        
+        self.__chk_shell = self.check_shell()
+        if self.__chk_shell == 0: 
+            MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
+            return
+        
         self.prog_apply.setValue(50)
         self.thread = QtCore.QThread()
         self.worker = Worker(self.__area_cut)
@@ -334,6 +363,16 @@ class CreateOQ(QtWidgets.QWidget):
                 area_cut(self.__pybin(), fn, outputdir, area_geoms, self.__dict_area_depth, chk=chk)
 
     def _on_btn_fault_cut_clicked(self):
+        outdir = self.txt_outdir.text()
+        if not os.path.isdir(outdir): 
+            MBoxLbl("Make sure the output directory is exist!", self)
+            return
+        
+        self.__chk_shell = self.check_shell()
+        if self.__chk_shell == 0: 
+            MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
+            return
+        
         self.prog_apply.setValue(50)
         self.thread = QtCore.QThread()
         self.worker = Worker(self.__fault_cut)
@@ -367,6 +406,16 @@ class CreateOQ(QtWidgets.QWidget):
                 fault_cut(self.__pybin(), fn, outputdir, fault_geoms, fault_props, chk=chk)
 
     def __view_3D_after_fault_cut(self, localcoords=False):
+        outdir = self.txt_outdir.text()
+        if not os.path.isdir(outdir): 
+            MBoxLbl("Make sure the output directory is exist!", self)
+            return
+        
+        self.__chk_shell = self.check_shell()
+        if self.__chk_shell == 0: 
+            MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
+            return
+        
         self.prog_apply.setValue(50)
         self.thread = QtCore.QThread()
         self.worker = Worker(self.__fault_mesh)
