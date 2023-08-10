@@ -126,6 +126,10 @@ class SearchByMaps(QtWidgets.QWidget):
         self.mpl_select_map_plot.mpl.communicate.sig[int].connect(
             lambda: get_ind(self.mpl_select_map_plot.mpl))
         
+        # set datetime
+        self.datetime_start.setDateTime(QtCore.QDateTime.currentDateTime().addSecs(- 5 * 60).addDays(- 1))
+        self.datetime_end.setDateTime(QtCore.QDateTime.currentDateTime().addSecs(- 5 * 60))
+        
     def reset_configs(self):
         """
         reset the configs to default

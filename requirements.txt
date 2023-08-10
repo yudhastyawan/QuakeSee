@@ -8,3 +8,4 @@ qtconsole==5.4.0
 scipy==1.10.0
 shapely==2.0.1
 PyYAML==6.0
+paramiko==3.3.1
