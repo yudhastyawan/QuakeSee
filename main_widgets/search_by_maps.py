@@ -15,6 +15,7 @@ from pyproj import Geod
 from matplotlib.transforms import blended_transform_factory
 
 from libs.select_from_collection import SelectFromCollection
+from widgets.messagebox import MBox, MBoxLbl
 from libs.commons import Worker
 from libs.utils import TableModel
 
@@ -188,7 +189,6 @@ class SearchByMaps(QtWidgets.QWidget):
             self.worker.progress.emit("\nsearch events . . .")
 
         # t1 and t2 as the time limitation (min and max)
-        client = Client(self.configs["client events"])
         t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
         t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
 
@@ -196,6 +196,7 @@ class SearchByMaps(QtWidgets.QWidget):
         (minlon, maxlon), (minlat, maxlat) = self.mpl_select_map.mpl.data
 
         try:
+            client = Client(self.configs["client events"])
             self.data["events"] = client.get_events(starttime=t1, endtime=t2, minmagnitude=self.configs["Mmin"], 
                                     minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
             x = []
@@ -256,7 +257,7 @@ class SearchByMaps(QtWidgets.QWidget):
 
         except:
             if self.worker != None:
-                self.worker.progress.emit("error during the process!")
+                self.worker.progress.emit("error during the process, check internet connection!")
         # print(self.data["events"])
 
     def _on_btn_selectevent_tbl_clicked(self):
@@ -315,7 +316,6 @@ class SearchByMaps(QtWidgets.QWidget):
     def _show_stations(self):
         """
         """
-        client = RoutingClient("iris-federator")
 
         t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
         t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
@@ -324,32 +324,38 @@ class SearchByMaps(QtWidgets.QWidget):
         if self.worker != None:
             self.worker.progress.emit("\nsearch stations . . .")
 
-        self.data["stations"] = client.get_stations(network=self.configs["network filter"], channel=self.configs["channel filter"], starttime=t1,
-                                    endtime=t2,level="response",
-                                    minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
-        # self.data["stations"] = self.data["stations"].select(network=self.configs["network filter"], channel=self.configs["channel filter"][1])
-        self.data["selected stations"] = self.data["stations"]
+        try:
+            client = RoutingClient("iris-federator")
+            self.data["stations"] = client.get_stations(network=self.configs["network filter"], channel=self.configs["channel filter"], starttime=t1,
+                                        endtime=t2,level="response",
+                                        minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
+            # self.data["stations"] = self.data["stations"].select(network=self.configs["network filter"], channel=self.configs["channel filter"][1])
+            self.data["selected stations"] = self.data["stations"]
+            
+            x = []
+            y = []
+            self.__pass_inv = dict()
+            __n = 0
+            for i, net in enumerate(self.data["stations"]):
+                for j, stat in enumerate(net):
+                    x.append(stat._longitude)
+                    y.append(stat._latitude)
+                    self.__pass_inv[f"{__n}"] = [i,j]
+                    __n += 1
+
+
+            ax = self.mpl_select_map_2.mpl.axes
+
+            self.stat_points = ax.scatter(x, y, c='k', s=80, marker='^', clip_on=False)
+            if self.worker != None:
+                self.worker.progress.emit("data being plotted . . .")
+
+            self.stat_selector = SelectFromCollection(ax, self.stat_points)
+            self.mpl_select_map_2.mpl.draw()
         
-        x = []
-        y = []
-        self.__pass_inv = dict()
-        __n = 0
-        for i, net in enumerate(self.data["stations"]):
-            for j, stat in enumerate(net):
-                x.append(stat._longitude)
-                y.append(stat._latitude)
-                self.__pass_inv[f"{__n}"] = [i,j]
-                __n += 1
-
-
-        ax = self.mpl_select_map_2.mpl.axes
-
-        self.stat_points = ax.scatter(x, y, c='k', s=80, marker='^', clip_on=False)
-        if self.worker != None:
-            self.worker.progress.emit("data being plotted . . .")
-
-        self.stat_selector = SelectFromCollection(ax, self.stat_points)
-        self.mpl_select_map_2.mpl.draw()
+        except:
+            if self.worker != None:
+                self.worker.progress.emit("error during the process, check internet connection!")
     
     def show_events_in_mpl_2(self, mpl):
         """
@@ -433,44 +439,49 @@ class SearchByMaps(QtWidgets.QWidget):
         evlon = self.data["selected event"].origins[0].longitude
         evlat = self.data["selected event"].origins[0].latitude
 
-        bulk = []
-        for i, net in enumerate(self.data["selected stations"]):
-            for j, stat in enumerate(net):
-                net_code = net._code
-                st_code = stat._code
-                lon = stat._longitude
-                lat = stat._latitude
-                _,_,dist = g.inv(evlon,evlat,lon,lat)
-                bulk.append((net_code,st_code, "*", self.configs["channel filter"], t1, t2, dist, lon, lat))
+        try:
+            bulk = []
+            for i, net in enumerate(self.data["selected stations"]):
+                for j, stat in enumerate(net):
+                    net_code = net._code
+                    st_code = stat._code
+                    lon = stat._longitude
+                    lat = stat._latitude
+                    _,_,dist = g.inv(evlon,evlat,lon,lat)
+                    bulk.append((net_code,st_code, "*", self.configs["channel filter"], t1, t2, dist, lon, lat))
 
-        if self.worker != None:
-            self.worker.progress.emit("\nsearch available waveforms . . .")
-        self.data["waveforms"] = None
-        self.accepted_bulks = []
-        nn = 0
-        for i_bl, bl in enumerate(bulk):
-            is_pass = False
-            for cl in self.configs["selected clients"]:
-                if is_pass == True: continue
-                try:
-                    client = Client(cl)
-                    st = client.get_waveforms(network=bl[0], station=bl[1], location=bl[2], channel=bl[3], 
-                                              starttime=bl[4], endtime=bl[5])
-                    # st = st.select(channel=self.configs["channel filter"][1])
-                    if (len(st) != 0):
-                        for tr in st:
-                            tr.stats.distance = bl[6]
-                        if nn == 0:
-                            self.data["waveforms"] = st
-                        else:
-                            self.data["waveforms"] += st
-                        nn += 1
-                        if self.worker != None:
-                            self.worker.progress.emit(f"net: {bl[0]}, st: {bl[1]}, client: {cl}, downloaded ({int(100*(i_bl+1)/len(bulk))}%)")
-                        self.accepted_bulks.append(bl)
-                        is_pass = True
-                except:
-                    pass
+            if self.worker != None:
+                self.worker.progress.emit("\nsearch available waveforms . . .")
+            self.data["waveforms"] = None
+            self.accepted_bulks = []
+            nn = 0
+            for i_bl, bl in enumerate(bulk):
+                is_pass = False
+                for cl in self.configs["selected clients"]:
+                    if is_pass == True: continue
+                    try:
+                        client = Client(cl)
+                        st = client.get_waveforms(network=bl[0], station=bl[1], location=bl[2], channel=bl[3], 
+                                                starttime=bl[4], endtime=bl[5])
+                        # st = st.select(channel=self.configs["channel filter"][1])
+                        if (len(st) != 0):
+                            for tr in st:
+                                tr.stats.distance = bl[6]
+                            if nn == 0:
+                                self.data["waveforms"] = st
+                            else:
+                                self.data["waveforms"] += st
+                            nn += 1
+                            if self.worker != None:
+                                self.worker.progress.emit(f"net: {bl[0]}, st: {bl[1]}, client: {cl}, downloaded ({int(100*(i_bl+1)/len(bulk))}%)")
+                            self.accepted_bulks.append(bl)
+                            is_pass = True
+                    except:
+                        pass
+
+        except:
+            if self.worker != None:
+                self.worker.progress.emit("error during the process, check internet connection!")            
 
     def _show_waveforms(self):
         """
