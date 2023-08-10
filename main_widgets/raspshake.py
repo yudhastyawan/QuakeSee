@@ -15,7 +15,8 @@ import numpy as np
 import matplotlib as mplib
 import paramiko
 from datetime import datetime
-from obspy.clients.earthworm import Client
+from obspy.clients.earthworm import Client as eClient
+import matplotlib.pyplot as plt
 
 
 class RaspShake(QtWidgets.QWidget):
@@ -73,8 +74,8 @@ class RaspShake(QtWidgets.QWidget):
             MBoxLbl("Error during the process, check connection to Raspberry Shake / input parameters!", self)
 
     def _on_btn_wave_plot_clicked(self):
-        t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
-        t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
+        t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime()) - (3600 * 7)
+        t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime()) - (3600 * 7)
 
         try:
             client = Client(self.txt_wave_host.text(), int(self.txt_wave_port.text()))
@@ -84,7 +85,10 @@ class RaspShake(QtWidgets.QWidget):
                                     self.txt_wave_loc.text(), 
                                     self.txt_wave_chan.text(), t1, t2)
             self._printLn(str(st))
-            st.plot()
+            fig = plt.figure()
+            st.plot(fig=fig)
+            plt.show()
+            # plt.close(fig)
 
         except:
             MBoxLbl("Error during the process, check connection to Raspberry Shake / input parameters!", self)            
@@ -111,3 +115,65 @@ class RaspShake(QtWidgets.QWidget):
 
         except:
             MBoxLbl("Error during the process, check connection to Raspberry Shake / input parameters!", self)
+
+    def _on_btn_wave_start_clicked(self):
+        try:
+            client = eClient(self.txt_real_host.text(), int(self.txt_real_port.text()))
+            self.worker = Worker(client, 
+                                self.txt_real_net.text(), 
+                                self.txt_real_stat.text(), 
+                                self.txt_real_loc.text(), 
+                                self.txt_real_chan.text(), 
+                                delay_time = int(self.txt_real_up_time.text()), 
+                                st_time = int(self.txt_real_st_time.text()))
+            self.thread = QtCore.QThread()
+            self.worker.moveToThread(self.thread)
+            self.worker.signal_data.connect(self.update_plot)
+            self.btn_wave_resume.clicked.connect(self.worker.start)
+            self.btn_wave_stop.clicked.connect(self.worker.stop)
+            self.thread.started.connect(self.worker.run)
+            self.thread.start()
+        except:
+            MBoxLbl("Error during the process, check connection to Raspberry Shake / input parameters!", self)
+        
+
+    def update_plot(self, st):
+        mpl = self.wave_live.mpl
+        mpl.axes.get_figure().clf()
+
+        st.plot(fig = mpl.axes.get_figure())
+        # self.canvas.axes.get_figure().get_axes()[0].set_ylim([-7300, -6900])
+        mpl.draw()
+
+class Worker(QtCore.QObject):
+    signal_data = QtCore.pyqtSignal(ob.Stream)
+    signal_stop = QtCore.pyqtSignal()
+    signal_start = QtCore.pyqtSignal()
+
+    def __init__(self, client, net, stat, loc, chan, delay_time = 1, st_time = 5):
+        super().__init__()
+        self.client = client
+        self.delay_time = delay_time
+        self.st_time = st_time
+        self.net = net
+        self.stat = stat
+        self.loc = loc
+        self.chan = chan
+
+    def run(self):
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(self.delay_time * 1000)
+        self.timer.timeout.connect(self.get_st)
+
+    def start(self):
+        self.timer.start()
+
+    def stop(self):
+        self.timer.stop()
+
+    def get_st(self):
+        t2 = ob.UTCDateTime.now() - 10
+        t1 = t2 - self.st_time
+        st = self.client.get_waveforms(self.net, self.stat, self.loc, self.chan, t1, t2)
+
+        self.signal_data.emit(st)

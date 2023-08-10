@@ -61,6 +61,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 ["HVSR (X)", None],
                 ["Create OQ Inputs", 6],
                 ["Raspberry Shake", 7],
+                ["Real-Time Waveforms", 8]
             ],
             "About": [
                 ["References", 1],
