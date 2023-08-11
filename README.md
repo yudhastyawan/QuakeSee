@@ -42,7 +42,7 @@ path_OQ:
 - [ ] Convert ISC catalogue to OpenQuake catalogue
 - [x] Add a utility to load station/inventory data in *.xml
 - [x] Add a utility to plot station/inventory responses
-- [ ] Add a utility to conduct HVSR analysis
+- [ ] Add a utility to conduct HVSR analysis (to do: Inverse Modeling)
 - [x] Add a utility to prepare Openquake inputs such as declustering, delimiting data based on sources, a-b values
 - [x] Add a utility to pick phases on loaded waveform data
 - [ ] Add a utility to download and view from raspberry shake seismometers/accelerometers.
