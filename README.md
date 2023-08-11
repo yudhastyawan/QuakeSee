@@ -45,7 +45,7 @@ path_OQ:
 - [ ] Add a utility to conduct HVSR analysis (to do: Inverse Modeling)
 - [x] Add a utility to prepare Openquake inputs such as declustering, delimiting data based on sources, a-b values
 - [x] Add a utility to pick phases on loaded waveform data
-- [ ] Add a utility to download and view from raspberry shake seismometers/accelerometers.
+- [x] Add a utility to download and view from raspberry shake seismometers/accelerometers.
 
 ## Gallery
 <p align="center">
