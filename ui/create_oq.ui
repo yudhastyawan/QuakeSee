@@ -805,15 +805,15 @@
    </slots>
   </customwidget>
   <customwidget>
-   <class>TreeOQ</class>
-   <extends>QTreeView</extends>
-   <header>widgets.treeoq</header>
-  </customwidget>
-  <customwidget>
    <class>MplCanvasBaseWithToolbar</class>
    <extends>QWidget</extends>
    <header>widgets.mplcanvas</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TreeOQ</class>
+   <extends>QTreeView</extends>
+   <header>widgets.treeoq</header>
   </customwidget>
   <customwidget>
    <class>MplCanvasBase3DWithToolbar</class>

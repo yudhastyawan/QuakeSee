@@ -58,7 +58,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 ["Continuous Data (X)", None]
             ],
             "Utilities": [
-                ["HVSR (X)", None],
+                ["HVSR", 9],
                 ["Create OQ Inputs", 6],
                 ["Raspberry Shake", 7],
                 ["Real-Time Waveforms", 8]

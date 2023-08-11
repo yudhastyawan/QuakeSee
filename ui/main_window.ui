@@ -201,7 +201,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>8</number>
+        <number>9</number>
        </property>
        <widget class="SearchByMaps" name="search_by_maps"/>
        <widget class="About" name="about_references"/>
@@ -212,6 +212,7 @@
        <widget class="CreateOQ" name="create_oq"/>
        <widget class="RaspShake" name="raspshake"/>
        <widget class="RealTimeWaveforms" name="real_time_waveforms"/>
+       <widget class="HVSRInterface" name="hvsr_interface"/>
       </widget>
      </item>
     </layout>
@@ -506,6 +507,12 @@
    <class>RealTimeWaveforms</class>
    <extends>QWidget</extends>
    <header>main_widgets.real_time_waveforms</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HVSRInterface</class>
+   <extends>QWidget</extends>
+   <header>main_widgets.hvsr_interface</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
