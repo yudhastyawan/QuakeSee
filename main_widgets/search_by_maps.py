@@ -18,6 +18,7 @@ from libs.select_from_collection import SelectFromCollection
 from widgets.messagebox import MBox, MBoxLbl
 from libs.commons import Worker
 from libs.utils import TableModel
+import matplotlib.pyplot as plt
 
 class SearchByMaps(QtWidgets.QWidget):
     """
@@ -557,6 +558,12 @@ class SearchByMaps(QtWidgets.QWidget):
             except:
                 pass
 
+    def _show_waveforms_in_new_window(self):
+        if self.data['waveforms'] is not None:
+            st = self.data['waveforms']
+            fig = plt.figure()
+            st.plot(fig=fig)
+            plt.show()
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

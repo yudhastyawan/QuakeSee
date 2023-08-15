@@ -72,6 +72,7 @@
        <string>Waveforms</string>
       </property>
       <addaction name="actionLoad_to_Load_Waveform_Data"/>
+      <addaction name="actionShow_Waveforms_in_New_Window"/>
      </widget>
      <addaction name="menuSelect_Event"/>
      <addaction name="menuSelect_Stations"/>
@@ -455,6 +456,11 @@
   <action name="actionLoad_to_Load_Waveform_Data">
    <property name="text">
     <string>Load to &quot;Load Waveform Data&quot;</string>
+   </property>
+  </action>
+  <action name="actionShow_Waveforms_in_New_Window">
+   <property name="text">
+    <string>Show Waveforms in New Window</string>
    </property>
   </action>
  </widget>

@@ -100,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionClear_New_Windows.triggered.connect(self.load_data_waveforms._on_btn_clear_windows_clicked)
         self.actionReverse_Strike_in_Selected_Geometries.triggered.connect(self.create_oq.reverse_strike_in_selected_geometries)
         self.actionLoad_to_Load_Waveform_Data.triggered.connect(self.wave_from_map_to_load_waveform_data)
+        self.actionShow_Waveforms_in_New_Window.triggered.connect(self.search_by_maps._show_waveforms_in_new_window)
         self.actionConvert_Lonlat_to_Distance_3D.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(True))
         self.actionPreview_3D_Lon_Lat_degree.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(False))
 
