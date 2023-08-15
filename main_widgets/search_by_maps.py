@@ -379,20 +379,23 @@ class SearchByMaps(QtWidgets.QWidget):
     def _select_stations(self, bool):
         """
         """
-        if self.stat_txts != []:
-            for txt in self.stat_txts:
-                txt.remove()
-            self.mpl_select_map_2.mpl.draw()
-            self.stat_txts = []
+        try:
+            if self.stat_txts != []:
+                for txt in self.stat_txts:
+                    txt.remove()
+                self.mpl_select_map_2.mpl.draw()
+                self.stat_txts = []
 
-        if bool == True:
-            ax = self.mpl_select_map_2.mpl.axes
-            self.stat_selector = SelectFromCollection(ax, self.stat_points)
-            self.stat_selector.communicate.sigEmpty.connect(self.__select_stations_by_indices)
+            if bool == True:
+                ax = self.mpl_select_map_2.mpl.axes
+                self.stat_selector = SelectFromCollection(ax, self.stat_points)
+                self.stat_selector.communicate.sigEmpty.connect(self.__select_stations_by_indices)
 
-        else:
-            self.stat_selector.disconnect()
-            self.mpl_select_map_2.mpl.draw()
+            else:
+                self.stat_selector.disconnect()
+                self.mpl_select_map_2.mpl.draw()
+        except:
+            MBoxLbl("Error selecting stations!", self)
 
     def __select_stations_by_indices(self):
         """

@@ -99,6 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionSave_Waveforms_mseed.triggered.connect(self.search_by_maps._save_waveforms)
         self.actionClear_New_Windows.triggered.connect(self.load_data_waveforms._on_btn_clear_windows_clicked)
         self.actionReverse_Strike_in_Selected_Geometries.triggered.connect(self.create_oq.reverse_strike_in_selected_geometries)
+        self.actionLoad_to_Load_Waveform_Data.triggered.connect(self.wave_from_map_to_load_waveform_data)
         self.actionConvert_Lonlat_to_Distance_3D.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(True))
         self.actionPreview_3D_Lon_Lat_degree.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(False))
 
@@ -128,6 +129,12 @@ class MainWindow(QtWidgets.QMainWindow):
             except:
                 pass
 
+    def wave_from_map_to_load_waveform_data(self):
+        if self.search_by_maps.data["waveforms"] is not None:
+            self.load_data_waveforms._base_waveforms = self.search_by_maps.data["waveforms"]
+            self.load_data_waveforms.tree_list["Waveform Location"][1][3].setCurrentIndex(0)
+            self.stacked_main.setCurrentIndex(4)
+            self.load_data_waveforms._on_btn_apply_clicked()
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

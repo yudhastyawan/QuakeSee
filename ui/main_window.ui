@@ -67,8 +67,15 @@
       <addaction name="actionSave_Selected_Stations_csv"/>
       <addaction name="actionSave_Waveforms_mseed"/>
      </widget>
+     <widget class="QMenu" name="menuWaveforms">
+      <property name="title">
+       <string>Waveforms</string>
+      </property>
+      <addaction name="actionLoad_to_Load_Waveform_Data"/>
+     </widget>
      <addaction name="menuSelect_Event"/>
      <addaction name="menuSelect_Stations"/>
+     <addaction name="menuWaveforms"/>
     </widget>
     <widget class="QMenu" name="menuLoad_Waveform_Data">
      <property name="title">
@@ -443,6 +450,11 @@
   <action name="actionPreview_3D_Lon_Lat_degree">
    <property name="text">
     <string>Preview 3D (Lon Lat (degree))</string>
+   </property>
+  </action>
+  <action name="actionLoad_to_Load_Waveform_Data">
+   <property name="text">
+    <string>Load to &quot;Load Waveform Data&quot;</string>
    </property>
   </action>
  </widget>

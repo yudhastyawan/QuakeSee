@@ -11,6 +11,7 @@ from matplotlib.transforms import blended_transform_factory
 import pandas as pd
 import numpy as np
 import matplotlib as mplib
+from widgets.messagebox import MBox, MBoxLbl
 
 class LoadDataWaveforms(QtWidgets.QWidget):
     def __init__(self, parent = None):
@@ -106,6 +107,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.__wave_df = None
         self.__phase_df = None
         self.__phase_check = None
+        self._base_waveforms = None
 
         self.thread = None
         self.worker = None
@@ -150,7 +152,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         P = []
         S = []
         check = []
-        for tr in self.__base_waveforms:
+        for tr in self._base_waveforms:
             if "".join([tr.stats.__dict__[key] for key in ["network", "station", "location"]]) not in check:
                 data_phase = {key: data_phase[key] + [tr.stats.__dict__[key]] for key in ["network", "station", "location"]}
                 P.append(np.nan)
@@ -170,6 +172,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.plot_menu.triggered.connect(self.__on_plot_menu_clicked)
         self.plot_new_window_menu = self.menu.addAction("Plot in A New Window")
         self.plot_new_window_menu.triggered.connect(self.__on_plot_menu_new_window_clicked)
+        self.save_ascii_menu = self.menu.addAction("Save to ascii files")
+        self.save_ascii_menu.triggered.connect(self.__on_plot_menu_save_ascii_clicked)
         self.menu.exec_(event.globalPos())
 
     def __on_plot_menu_clicked(self):
@@ -192,6 +196,25 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.__update_mpl_to_tight(self.__plot_widget.mpl)
         self.__plot_widget.show()
         self.__new_windows.append(self.__plot_widget)
+
+    def __on_plot_menu_save_ascii_clicked(self):
+        rows = [idx.row() for idx in self.table_waves.selectionModel().selectedRows()]
+        self.__st = ob.Stream([self.data["waveforms"].traces[i] for i in rows])
+
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save to ASCII files", "", "ASCII Files (*.txt)")
+        for i, tr in enumerate(self.__st):
+            with open(os.path.splitext(fileName)[0] + f"_{i+1}.txt", "w") as f:
+                f.write("# NETWORK %s\n" % (tr.stats.network))
+                f.write("# STATION %s\n" % (tr.stats.station))
+                f.write("# CHANNEL %s\n" % (tr.stats.channel))
+                f.write("# START_TIME %s\n" % (str(tr.stats.starttime)))
+                f.write("# SAMP_FREQ %f\n" % (tr.stats.sampling_rate))
+                f.write("# NDAT %d\n" % (tr.stats.npts))
+                np.savetxt(f, np.hstack((np.arange(0,tr.stats.delta * tr.stats.npts, 
+                                                  tr.stats.delta).reshape((tr.stats.npts,1)), 
+                                                  np.reshape(tr.data, (tr.stats.npts,1)))), fmt="%f")
+        
+        self._printLn("Data have been saved to ascii files.")
 
     def reset_configs(self):
         for key in self.configs.keys():
@@ -517,15 +540,15 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             except:
                 vs = None
             if vp != None and vs != None:
-                for v, c, l in zip([vp, vs], ["red", "green"], ["Vp", "Vs"]):
+                for v, c, l in zip([vp, vs], ["red", "green"], [f"Vp = {vp:.2f} km/s", f"Vs = {vs:.2f} km/s"]):
                     tmax = delta_t + xmax / v
                     ax.plot([0, xmax], [delta_t, tmax], c=c, label=l)
             elif vp != None and vs == None:
                 tmax = delta_t + xmax / vp
-                ax.plot([0, xmax], [delta_t, tmax], c = "red", label="Vp")
+                ax.plot([0, xmax], [delta_t, tmax], c = "red", label=f"Vp = {vp:.2f} km/s")
             elif vp == None and vs != None:
                 tmax = delta_t + xmax / vs
-                ax.plot([0, xmax], [delta_t, tmax], c = "green", label="Vs")
+                ax.plot([0, xmax], [delta_t, tmax], c = "green", label=f"Vs = {vs:.2f} km/s")
             
         ax.legend()
         self.tab_time_offsets.mpl.draw()
@@ -544,12 +567,12 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                     else:
                         self.data["waveforms"] += ob.read(fn)
 
-                self.__base_waveforms = self.data["waveforms"].copy()
+                self._base_waveforms = self.data["waveforms"].copy()
             except:
                 self.__worker_progress("The data cannot be load.")
                 self.data["waveforms"] = None
         else:
-            self.data["waveforms"] = self.__base_waveforms.copy()
+            self.data["waveforms"] = self._base_waveforms.copy()
 
         if self.data["waveforms"] != None:
             self.__precondition_waveforms()
@@ -670,7 +693,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
 
     def _on_btn_add_phase_sac_clicked(self):
         df = self.__phase_df
-        for tr in self.__base_waveforms:
+        for tr in self._base_waveforms:
             sta = tr.stats
             if "sac" in sta.__dict__.keys():
                 for ph_1, ph_2 in zip(["P", "S"], ["a", "t0"]):
