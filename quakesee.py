@@ -104,6 +104,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionConvert_Lonlat_to_Distance_3D.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(True))
         self.actionPreview_3D_Lon_Lat_degree.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(False))
 
+        # load during opening program
+        self.create_oq._chk_on_program_load()
+
     def run_kernel(self):
         self.py_console.run_kernel(self.py_editor.toPlainText())
         self.dock_console.raise_()

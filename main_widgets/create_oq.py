@@ -96,25 +96,35 @@ class CreateOQ(QtWidgets.QWidget):
         self.__gdf_fault = None
         self.__fault_props = None
         self.__dict_area_depth = {"upper depth": [], "lower depth": []}
-        self.__chk_shell = 0
+        self._chk_shell = 0
 
         self.mpl_map_reset(self.map_view.mpl)
 
         # check_shell
-        if self.txt_python_path.text() != "": 
-            self.__chk_shell = self.check_shell()
-            if self.__chk_shell == 0: MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
+        # if self.txt_python_path.text() != "": 
+        #     self._chk_shell = self.check_shell()
+        #     if self._chk_shell == 0: MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
 
-        if self.txt_outdir.text() != "":
-            if not os.path.isdir(self.txt_outdir.text()): 
-                MBoxLbl("Make sure the output directory is exist!", self)
+        # if self.txt_outdir.text() != "":
+        #     if not os.path.isdir(self.txt_outdir.text()): 
+        #         MBoxLbl("Make sure the output directory is exist!", self)
 
         self.txt_python_path.textChanged[str].connect(self.__check_chk_shell)
 
+    def _chk_on_program_load(self):
+        # check_shell
+        if self.txt_python_path.text() != "": 
+            self._chk_shell = self.check_shell()
+            if self._chk_shell == 0: print("ERROR!\nCheck Python Path!\nMake sure the OpenQuake Python in Create OQ Input is exist!")
+
+        if self.txt_outdir.text() != "":
+            if not os.path.isdir(self.txt_outdir.text()): 
+                print("ERROR!\nCheck the Output Directory!\nMake sure the output directory of Create OQ Inputs is exist!")
+
     def __check_chk_shell(self, txt):
         if os.path.isfile(txt):
-            self.__chk_shell = check_shell(txt)
-            if self.__chk_shell == 0:
+            self._chk_shell = check_shell(txt)
+            if self._chk_shell == 0:
                 MBoxLbl("Make sure the Python path is exist", self)
         else:
             MBoxLbl("The Python path is not exist", self)
@@ -167,7 +177,7 @@ class CreateOQ(QtWidgets.QWidget):
             MBoxLbl("Make sure the output directory is exist!", self)
             return
         
-        if self.__chk_shell == 0: 
+        if self._chk_shell == 0: 
             MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
             return
 
@@ -192,7 +202,7 @@ class CreateOQ(QtWidgets.QWidget):
                 os.remove(fname)
 
     def __apply_thread(self):
-        chk = self.__chk_shell
+        chk = self._chk_shell
         outdir = self.txt_outdir.text()
 
         inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
@@ -339,7 +349,7 @@ class CreateOQ(QtWidgets.QWidget):
             MBoxLbl("Make sure the output directory is exist!", self)
             return
         
-        if self.__chk_shell == 0: 
+        if self._chk_shell == 0: 
             MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
             return
         
@@ -357,7 +367,7 @@ class CreateOQ(QtWidgets.QWidget):
         self.worker.finished.connect(lambda: self.prog_apply.setValue(100))
 
     def __area_cut(self):
-        chk = self.__chk_shell
+        chk = self._chk_shell
         inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
         outputdir = self.txt_outdir.text()
         geom_rows = [idx.row() for idx in self.table_area.selectionModel().selectedRows()]
@@ -374,7 +384,7 @@ class CreateOQ(QtWidgets.QWidget):
             MBoxLbl("Make sure the output directory is exist!", self)
             return
         
-        if self.__chk_shell == 0: 
+        if self._chk_shell == 0: 
             MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
             return
         
@@ -393,7 +403,7 @@ class CreateOQ(QtWidgets.QWidget):
         self.worker.finished.connect(lambda: self.prog_apply.setValue(100))
 
     def __fault_cut(self):
-        chk = self.__chk_shell
+        chk = self._chk_shell
         inputfile = self.tree_list['Catalogue'][0][3].text.toPlainText()
         outputdir = self.txt_outdir.text()
 
@@ -416,7 +426,7 @@ class CreateOQ(QtWidgets.QWidget):
             MBoxLbl("Make sure the output directory is exist!", self)
             return
         
-        if self.__chk_shell == 0: 
+        if self._chk_shell == 0: 
             MBox("Check Python Path!", "Make sure the OpenQuake Python is exist.", self)
             return
         
@@ -435,7 +445,7 @@ class CreateOQ(QtWidgets.QWidget):
 
     def __fault_mesh(self):
         inputfile = 'temp'
-        chk = self.__chk_shell
+        chk = self._chk_shell
 
         geom_rows = [idx.row() for idx in self.table_fault.selectionModel().selectedRows()]
         
