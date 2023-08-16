@@ -15,7 +15,7 @@ Install the reqired packages in `requirements.txt` and run `quakesee.py` in your
 5. Run command `conda activate quakesee`
 6. [Download](https://github.com/yudhastyawan/QuakeSee/archive/refs/heads/main.zip)/Clone this repository to your computer drive
 7. If in a Zip file, extract the contents in one folder
-8. Locate Anaconda prompt/Terminal to the extracted folder by command `cd "locate/to/folder"`
+8. Locate Anaconda prompt/Terminal to the extracted folder by command `cd "locate/to/folder"` (For going to a different drive, put the drive name in CMD e.g. `F:`)
 9. Run command `pip install -r requirements.txt`
 11. Run command `python quakesee.py`
 12. Enjoy!
