@@ -41,10 +41,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.raspshake.py_console = self.py_console
         self.raspshake.py_editor = self.py_editor
         self.create_oq.py_console = self.py_console
+        self.download_isc.py_console = self.py_console
         
         self.search_by_maps._push_kernel()
         self.load_data_waveforms._push_kernel()
         self.load_data_stations._push_kernel()
+        self.raspshake._push_kernel()
+        self.create_oq._push_kernel()
+        self.download_isc._push_kernel()
 
         # Generate the main tree list
         # - (X) denotes the unimplemented features
@@ -52,7 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tree_list = {
             "Data" : [
                 ["Search By Maps", 0],
-                ["Download ISC Catalogue (X)", None],
+                ["Download ISC Catalogue", 10],
                 ["Load Waveform Data", 4],
                 ["Load Station Data", 5],
                 ["Continuous Data (X)", None]

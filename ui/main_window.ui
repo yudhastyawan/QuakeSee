@@ -209,7 +209,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>9</number>
+        <number>10</number>
        </property>
        <widget class="SearchByMaps" name="search_by_maps"/>
        <widget class="About" name="about_references"/>
@@ -221,6 +221,7 @@
        <widget class="RaspShake" name="raspshake"/>
        <widget class="RealTimeWaveforms" name="real_time_waveforms"/>
        <widget class="HVSRInterface" name="hvsr_interface"/>
+       <widget class="DownloadISC" name="download_isc"/>
       </widget>
      </item>
     </layout>
@@ -531,6 +532,12 @@
    <class>HVSRInterface</class>
    <extends>QWidget</extends>
    <header>main_widgets.hvsr_interface</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DownloadISC</class>
+   <extends>QWidget</extends>
+   <header>main_widgets.download_isc</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

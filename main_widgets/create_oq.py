@@ -69,6 +69,12 @@ class CreateOQ(QtWidgets.QWidget):
             ],
         }
 
+        kernel_dict = {
+            "_oq":self,
+        }
+
+        self._push_kernel = lambda: self.py_console.push_kernel(kernel_dict)
+
         self.tree_oq.tree_list = self.tree_list
         self.tree_list = self.tree_oq.input_to_tree_model()
 
