@@ -30,6 +30,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # - read text banner that would be shown in the python console
         with open("mdfiles/banner.txt") as f:
             banner = f.read()
+        
+        # load during opening program
+        banner += self.create_oq._chk_on_program_load()
+
         self.py_console.banner = banner
         # - each window console need to be connected to the main console -> push kernel
         self.search_by_maps.py_console = self.py_console
@@ -107,9 +111,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionShow_Waveforms_in_New_Window.triggered.connect(self.search_by_maps._show_waveforms_in_new_window)
         self.actionConvert_Lonlat_to_Distance_3D.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(True))
         self.actionPreview_3D_Lon_Lat_degree.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(False))
-
-        # load during opening program
-        self.create_oq._chk_on_program_load()
 
     def run_kernel(self):
         self.py_console.run_kernel(self.py_editor.toPlainText())

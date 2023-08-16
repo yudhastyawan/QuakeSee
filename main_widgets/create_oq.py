@@ -119,13 +119,16 @@ class CreateOQ(QtWidgets.QWidget):
 
     def _chk_on_program_load(self):
         # check_shell
+        txt = ""
         if self.txt_python_path.text() != "": 
             self._chk_shell = self.check_shell()
-            if self._chk_shell == 0: print("ERROR!\nCheck Python Path!\nMake sure the OpenQuake Python in Create OQ Input is exist!")
+            if self._chk_shell == 0: txt += "\nERROR!\nCheck Python Path!\nMake sure the OpenQuake Python in Create OQ Input is exist!\n"
 
         if self.txt_outdir.text() != "":
             if not os.path.isdir(self.txt_outdir.text()): 
-                print("ERROR!\nCheck the Output Directory!\nMake sure the output directory of Create OQ Inputs is exist!")
+                txt += "\nERROR!\nCheck the Output Directory!\nMake sure the output directory of Create OQ Inputs is exist!\n"
+        
+        return txt
 
     def __check_chk_shell(self, txt):
         if os.path.isfile(txt):
