@@ -40,6 +40,8 @@ class TreeOQ(QtWidgets.QTreeView):
                         txt[3] = QComboBool()
                     elif txt[1] == "option":
                         txt[3] = QComboOption(txt[4])
+                    elif txt[1] == "color":
+                        txt[3] = ColorPicker()
                     elif txt[1] == "calendar":
                         txt[3] = QtWidgets.QDateTimeEdit(calendarPopup=True)
                         txt[3].setDisplayFormat("dd/MM/yyyy HH:mm:ss")
@@ -112,3 +114,38 @@ class QComboOption(QtWidgets.QComboBox):
     def __init__(self, option, parent = None):
         QtWidgets.QComboBox.__init__(self, parent)
         self.addItems(option)
+
+class ColorPicker(QtWidgets.QWidget):
+    _signal = QtCore.pyqtSignal()
+
+    def __init__(self, parent = None):
+        QtWidgets.QWidget.__init__(self, parent)
+        lay = QtWidgets.QHBoxLayout()
+        lay.setContentsMargins(0,0,0,0)
+        lay.setSpacing(0)
+        self.setLayout(lay)
+
+        self.wid = QtWidgets.QWidget()
+        self.wid.setAutoFillBackground(True)
+
+        self.color = QtGui.QColor()
+        rgb = (255,0,0)
+        self.color.setRgb(rgb[0],rgb[1],rgb[2])
+        # self._color_to_widget()
+        self.wid.setStyleSheet(f'background-color: rgb({rgb[0]},{rgb[1]},{rgb[2]});')
+
+        self.button = QtWidgets.QPushButton("<<")
+        self.button.clicked.connect(self._on_button_clicked)
+        lay.addWidget(self.wid)
+        lay.addWidget(self.button)
+
+    def _on_button_clicked(self):
+        color = QtWidgets.QColorDialog.getColor()
+        self.color = color
+        self._color_to_widget()
+
+    def _color_to_widget(self):
+        self.wid.setStyleSheet('')
+        pal = self.wid.palette()
+        pal.setColor(self.wid.backgroundRole(), self.color)
+        self.wid.setPalette(pal)

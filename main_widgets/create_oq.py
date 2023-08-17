@@ -58,9 +58,9 @@ class CreateOQ(QtWidgets.QWidget):
             ],
             "Map": [
                 ["Seismicity", "bool", None, None],
-                ["marker", "number", None, None],
+                ["marker", "option", None, None, ['o', '+', 'x', '*', 'v', 'D']],
                 ["size", "number", None, None],
-                ["color", "number", None, None],
+                ["color", "color", None, None],
             ],
             "Plot": [
                 ["M - T Density", "bool", None, None],
@@ -94,9 +94,7 @@ class CreateOQ(QtWidgets.QWidget):
             self.txt_python_path.setText(self.__userconfigs["path_OQ"]["python"])
             self.txt_outdir.setText(self.__userconfigs["path_OQ"]["outputdir"])
             
-        self.tree_list['Map'][1][3].setText("o")
         self.tree_list['Map'][2][3].setText("5")
-        self.tree_list['Map'][3][3].setText("red")
 
         self.__gdf_area = None
         self.__gdf_fault = None
@@ -260,10 +258,10 @@ class CreateOQ(QtWidgets.QWidget):
                 if self.chk_map_overwrite.isChecked(): self.mpl_map_reset(self.map_view.mpl)
                 df = pd.read_csv(fn)
                 ax = self.map_view.mpl.figure.axes[0]
-                marker = self.tree_list['Map'][1][3].text()
+                marker = self.tree_list['Map'][1][3].currentText()
                 size = int(self.tree_list['Map'][2][3].text())
-                color = self.tree_list['Map'][3][3].text()
-                ax.scatter(df["longitude"], df["latitude"], c=color, marker=marker, s=size)
+                color = self.tree_list['Map'][3][3].color.getRgbF()
+                ax.scatter(df["longitude"], df["latitude"], c=[color[0:3]], marker=marker, s=size, alpha=color[3])
                 self.map_view.mpl.draw()
 
             if self.tree_list["Plot"][0][3].currentIndex() == 1:

@@ -89,6 +89,8 @@ class DownloadISC(QtWidgets.QWidget):
                 mpl.draw()
             self._points, = ax.plot(dat[:,0], dat[:,1], 'ro-')
             mpl.draw()
+            self._printLn('lon=%f, lat=%f' % (event.xdata, event.ydata))
+            
         elif event.button == 3:
             if self._poly is not None: 
                 self._poly.remove()
@@ -102,8 +104,6 @@ class DownloadISC(QtWidgets.QWidget):
             geoms = ",".join([",".join(list(map(str,r))[::-1]) for r in self._saved_data])
 
             self.txt_coords.setText(geoms)
-
-        self._printLn('xdata=%f, ydata=%f' % (event.xdata, event.ydata))
 
     def _on_btn_dir_clicked(self):
         dir_name = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a Directory")

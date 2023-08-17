@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>904</width>
-    <height>648</height>
+    <height>662</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -524,6 +524,16 @@
             </widget>
            </item>
            <item>
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>Line Color</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="ColorPicker" name="wid_color" native="true"/>
+           </item>
+           <item>
             <widget class="QPushButton" name="btn_forward_apply">
              <property name="maximumSize">
               <size>
@@ -564,6 +574,12 @@
    <class>MplCanvasBaseWithToolbar</class>
    <extends>QWidget</extends>
    <header>widgets.mplcanvas</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ColorPicker</class>
+   <extends>QWidget</extends>
+   <header>widgets.treeoq</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

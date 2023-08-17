@@ -102,7 +102,7 @@ class HVSRInterface(QtWidgets.QWidget):
         if self.combo_view.currentIndex() == 0: mpl.axes.cla()
         mpl.axes.plot(F, AMPp, color='grey', linestyle="--", linewidth=1, label="$AMP_P$")
         mpl.axes.plot(F, AMPs, color='black', linestyle="--", linewidth=1, label="$AMP_S$")
-        mpl.axes.plot(F, HV, color='red', linestyle="-", linewidth=2, label="$HVSR$")
+        mpl.axes.plot(F, HV, color=self.wid_color.color.getRgbF()[0:3], linestyle="-", linewidth=2, label="$HVSR$")
 
         mpl.axes.semilogx()
         mpl.axes.set_xlabel("Frequency (Hz)")
