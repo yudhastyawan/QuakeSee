@@ -9,6 +9,7 @@ A GUI-based program to see distribution of events, stations, and seismograms ava
 - [x] Load station metadata (xml) and plot the response and location
 - [x] Live recording (show the real-time waveforms) on the open networks
 - [x] Set the time, access the recording data, and real-time view from RaspberryShake seismometers
+- [x] Calculating Magnitude of Completeness (Mc), b-value from Magnitude-Frequency Distribution (MFD/FMD), and extract the catalogue based on the shape of faults and area (wrapped to Openquake Engine) 
 
 ## How to Use
 Install the reqired packages in `requirements.txt` and run `quakesee.py` in your Python. Enjoy!
