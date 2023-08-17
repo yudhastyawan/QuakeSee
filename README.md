@@ -2,13 +2,13 @@
 A GUI-based program to see distribution of events, stations, and seismograms available in the earthquake data providers
 
 ## Features
-[x] Download events, station metadata, and waveforms from the open networks
-[x] Load waveforms, plot, and pick phases
-[x] forward modeling of HVSR
-[x] download ISC catalogue and convert to OpenQuake catalogue
-[x] Load station metadata (xml) and plot the response and location
-[x] Live recording (show the real-time waveforms) on the open networks
-[x] Set the time, access the recording data, and real-time view from RaspberryShake seismometers
+- [x] Download events, station metadata, and waveforms from the open networks
+- [x] Load waveforms, plot, and pick phases
+- [x] forward modeling of HVSR
+- [x] download ISC catalogue and convert to OpenQuake catalogue
+- [x] Load station metadata (xml) and plot the response and location
+- [x] Live recording (show the real-time waveforms) on the open networks
+- [x] Set the time, access the recording data, and real-time view from RaspberryShake seismometers
 
 ## How to Use
 Install the reqired packages in `requirements.txt` and run `quakesee.py` in your Python. Enjoy!
