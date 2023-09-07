@@ -70,6 +70,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="btn_save_stations">
+           <property name="text">
+            <string>Save As</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -145,8 +152,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_save_stations</sender>
+   <signal>clicked()</signal>
+   <receiver>load_data_stations</receiver>
+   <slot>_on_btn_save_stations_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>162</x>
+     <y>433</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>323</x>
+     <y>226</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>_on_btn_load_stations_clicked()</slot>
+  <slot>_on_btn_save_stations_clicked()</slot>
  </slots>
 </ui>

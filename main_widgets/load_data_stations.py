@@ -37,7 +37,7 @@ class LoadDataStations(QtWidgets.QWidget):
     def _on_btn_load_stations_clicked(self):
         """
         """
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Station File", "", "XML Files (*.xml)")
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Station File", "", "XML Files (*.STATIONXML *.xml)")
         if fileName:
             try: 
                 self.__inv = ob.read_inventory(fileName)
@@ -118,3 +118,47 @@ class LoadDataStations(QtWidgets.QWidget):
         mpl.axes.figure.tight_layout(pad=0, w_pad=0, h_pad=0)
         mpl.axes.margins(0)
         mpl.draw()
+
+    def _on_btn_save_stations_clicked(self):
+        flt = ["SEISAN HYP Files (*.hyp)",
+                  "STATIONXML Files (*.STATIONXML)",
+                  "STATIONTXT Files (*.STATIONTXT)",
+                  "SACPZ Files (*.SACPZ)",
+                  "KML Files (*.KML)"]
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save station", "", 
+                                                            ";;".join(flt))
+        if fileName:
+            ext = os.path.splitext(fileName)[1].replace(".","").upper()
+            if ext == "HYP":
+                if self.__station_df is not None:
+                    self._save_seisan_hyp(fileName)
+                    self._printLn2(f"saving station data to {fileName}")
+            else:
+                if self.__inv is not None:
+                    self.__inv.write(fileName, format=ext)
+                    self._printLn2(f"saving station data to {fileName}")
+
+    def _save_seisan_hyp(self, filename):
+        df = self.__station_df
+        with open(filename, 'w') as f:
+            stat_lis = []
+            for _, d in df.iterrows():
+                sta = d.station
+                if sta not in stat_lis:
+                    stat_lis.append(sta)
+                    if len(sta) > 5: continue
+                    str_sta = f"  {sta:4}" if (len(sta) <= 4) else f" {sta:5}"
+                    lat = d.latitude
+                    slat = "N" if (np.sign(lat) >= 0) else "S"
+                    lat = np.abs(lat)
+                    dlat = int(lat)
+                    mlat = 60 * (lat - dlat)
+                    lon = d.longitude
+                    slon = "E" if (np.sign(lon) >= 0) else "W"
+                    lon = np.abs(lon)
+                    dlon = int(lon)
+                    mlon = 60 * (lon - dlon)
+                    elev = d.elevation
+                    elev = int(elev)
+                    s_hyp = f"{str_sta}{dlat:2d}{mlat:5.2f}{slat:1}{dlon:3d}{mlon:5.2f}{slon:1}{elev:4d}\n"
+                    f.write(s_hyp)

@@ -5,6 +5,8 @@ File: search_by_maps.py
 
 from PyQt5 import QtWidgets, uic, QtCore
 import sys
+import os
+import numpy as np
 import geopandas as gpd
 import pandas as pd
 import obspy as ob
@@ -521,42 +523,151 @@ class SearchByMaps(QtWidgets.QWidget):
     def _save_stations(self):
         """
         """
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Stations", "", "XML Files (*.xml)")
+        flt = ["STATIONXML Files (*.STATIONXML)",
+               "SEISAN HYP Files (*.hyp)",
+                  "STATIONTXT Files (*.STATIONTXT)",
+                  "SACPZ Files (*.SACPZ)",
+                  "KML Files (*.KML)"]
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Stations", "", ";;".join(flt))
         if fileName:
-            if self.data["selected stations"] != None:
-                self.data["selected stations"].write(fileName, format="STATIONXML")
-                self._printLn2(f"saving station data to {fileName}")
+            try:
+                ext = os.path.splitext(fileName)[1].replace(".","").upper()
+                if self.data["selected stations"] is not None:
+                    if ext == "HYP":
+                        self._save_seisan_hyp(fileName)
+                        self._printLn2(f"saving station data to {fileName}")
+                    else:
+                        self.data["selected stations"].write(fileName, format=ext)
+                        self._printLn2(f"saving station data to {fileName}")
+            except:
+                pass
+
+    def _save_seisan_hyp(self, filename):
+        inv = self.data["selected stations"]
+        with open(filename, 'w') as f:
+            stat_lis = []
+            for netObj in inv:
+                for stObj in netObj:
+                    for chObj in stObj:
+                        sta = stObj._code
+                        if sta not in stat_lis:
+                            stat_lis.append(sta)
+                            if len(sta) > 5: continue
+                            str_sta = f"  {sta:4}" if (len(sta) <= 4) else f" {sta:5}"
+                            lat = chObj._latitude
+                            slat = "N" if (np.sign(lat) >= 0) else "S"
+                            lat = np.abs(lat)
+                            dlat = int(lat)
+                            mlat = 60 * (lat - dlat)
+                            lon = chObj._longitude
+                            slon = "E" if (np.sign(lon) >= 0) else "W"
+                            lon = np.abs(lon)
+                            dlon = int(lon)
+                            mlon = 60 * (lon - dlon)
+                            elev = chObj._elevation
+                            elev = int(elev)
+                            s_hyp = f"{str_sta}{dlat:2d}{mlat:5.2f}{slat:1}{dlon:3d}{mlon:5.2f}{slon:1}{elev:4d}\n"
+                            f.write(s_hyp)
     
     def _save_waveforms(self):
         """
         """
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Waveforms", "", "MSEED Files (*.mseed)")
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Waveforms", "", 
+                                                            "MSEED Files (*.mseed);;SAC Files (*.sac)")
         if fileName:
             if self.data["waveforms"] != None:
-                self.data["waveforms"].write(fileName, format="MSEED")
+                ext = os.path.splitext(fileName)[1]
+                self.data["waveforms"].write(fileName, format=ext.replace(".","").upper())
                 self._printLn2(f"saving waveform data to {fileName}")
 
     def _on_btn_save_events_clicked(self):
         """
         """
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Events", "", "ASCII Files (*.csv)")
+        flt = ["ASCII Files (*.CSV)",
+                  "QUAKEML Files (*.QUAKEML)",
+                  "ZMAP Files (*.ZMAP)",
+                  "NORDIC Files (*.NORDIC)",
+                  "HYPODDPHA Files (*.HYPODDPHA)",
+                  "KML Files (*.KML)",
+                  "JSON Files (*.JSON)"]
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Events", "",
+                                                            ";;".join(flt))
         if fileName:
             try:
-                self.__map_df.to_csv(fileName, index=False)
+                ext = os.path.splitext(fileName)[1].replace(".","").upper()
+                if ext == 'CSV':
+                    self.__map_df.to_csv(fileName, index=False)
+                else:
+                    self.data["events"].write(fileName, format=ext)
             except:
                 pass
 
-    def _on_btn_save_stations_csv_clicked(self):
-        """
-        """
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Stations", "", "ASCII Files (*.csv)")
+    def _on_btn_load_events_clicked(self):
+        flt = ["*.QUAKEML",
+               "*.NORDIC"]
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Event File", "", f"Event File ({' '.join(flt)})")
         if fileName:
             try:
-                pass
+                ext = os.path.splitext(fileName)[1].replace(".","").upper()
+                self.data["events"] = ob.read_events(fileName, format=ext)
 
-                # df.to_csv(fileName, index=False)
+                x = []
+                y = []
+                m = []
+                mt = []
+                d = []
+                t = []
+                tutc = []
+                a = []
+                for event in self.data["events"]:
+                    x.append(event.origins[0].longitude)
+                    y.append(event.origins[0].latitude)
+                    m.append(event.magnitudes[0].mag)
+                    mt.append(event.magnitudes[0].magnitude_type)
+                    t.append(event.origins[0].time.matplotlib_date)
+                    d.append(event.origins[0].depth/1000)
+                    tutc.append(str(event.origins[0].time))
+                    a.append(event.event_descriptions[0].text)
+                
+                self._printLn("plotting . . .")
+
+                # plotting events to the basemap
+                ax = self.mpl_select_map.mpl.axes
+                ax.plot(x, y, 'ro', picker=10, clip_on=False)
+                self.mpl_select_map.mpl.draw()
+
+                # creating a table
+                if self.chk_showtable.isChecked():
+                    if self.worker != None:
+                        self.worker.progress.emit("creating a table . . .")
+                    event_dict = {
+                        "origin time"   :tutc,
+                        "longitude"     :x, 
+                        "latitude"      :y, 
+                        "depth"         :d,
+                        "magnitude"     :m,
+                        "magnitude type":mt,
+                        "region"        :a,
+                        }
+                    
+                    self.__map_df = pd.DataFrame.from_dict(event_dict)
+                    self.__table_model = TableModel(self.__map_df)
+                    self.table_events.setModel(self.__table_model)
+                    self.table_events.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+                    self.table_events.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+
+                # plotting events as magnitude vs. time
+                self.mpl_select_map_plot.mpl.axes.cla()
+                ax = self.mpl_select_map_plot.mpl.axes
+                ax.plot(t, m, 'ro', picker=10, clip_on=False)
+                ax.xaxis_date()
+                ax.figure.autofmt_xdate()
+                ax.set_ylabel("Magnitude")
+                ax.set_xlabel("Time")
+                self.mpl_select_map_plot.mpl.draw()
+                self._printLn("finished!")
             except:
-                pass
+                self._printLn("Error reading the event file!")
 
     def _show_waveforms_in_new_window(self):
         if self.data['waveforms'] is not None:

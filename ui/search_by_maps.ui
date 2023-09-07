@@ -246,7 +246,7 @@
           <item>
            <widget class="QPushButton" name="btn_save_events">
             <property name="text">
-             <string>Save Events to csv</string>
+             <string>Save Events</string>
             </property>
            </widget>
           </item>
@@ -419,14 +419,7 @@
           <item>
            <widget class="QPushButton" name="btn_save_stations">
             <property name="text">
-             <string>Save Selected Stations (XML)</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btn_save_stations_csv">
-            <property name="text">
-             <string>Save Selected Stations (csv) (X)</string>
+             <string>Save Selected Stations</string>
             </property>
            </widget>
           </item>
@@ -499,6 +492,12 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>MplCanvasBaseWithToolbar</class>
+   <extends>QWidget</extends>
+   <header>widgets.mplcanvas</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>MplCanvasMapWithToolbar</class>
    <extends>QWidget</extends>
    <header>widgets.mplcanvas</header>
@@ -507,12 +506,6 @@
     <slot>select_rectangle(bool)</slot>
     <slot>select_event(bool)</slot>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>MplCanvasBaseWithToolbar</class>
-   <extends>QWidget</extends>
-   <header>widgets.mplcanvas</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>DateTimeEdit</class>

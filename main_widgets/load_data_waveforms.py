@@ -41,7 +41,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             ],
             "Stations": [
                 ["online search", "bool", None, None],
-                ["path", "path", None, None, ("Open Stations", "", "XML Files (*.xml)")],
+                ["path", "path", None, None, ("Open Stations", "", "XML Files (*.STATIONXML *.xml)")],
                 ["distance", "bool", None, None],
             ],
             "Selection": [
@@ -630,18 +630,62 @@ class LoadDataWaveforms(QtWidgets.QWidget):
             self.worker.progress.emit(txt)
 
     def _on_btn_saveas_waveforms_clicked(self):
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Waveforms", "", "MSEED Files (*.mseed)")
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Waveforms", "", 
+                                                            "MSEED Files (*.mseed);;SAC Files (*.sac)")
         if fileName:
             if self.data["waveforms"] != None:
-                self.data["waveforms"].write(fileName, format="MSEED")
+                ext = os.path.splitext(fileName)[1]
+                self.data["waveforms"].write(fileName, format=ext.replace(".","").upper())
                 self._printLn2(f"saving waveform data to {fileName}")
 
     def _on_btn_saveas_stationxml_clicked(self):
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Station XML", "", "XML Files (*.xml)")
+        """
+        """
+        flt = ["STATIONXML Files (*.STATIONXML)",
+               "SEISAN HYP Files (*.hyp)",
+                  "STATIONTXT Files (*.STATIONTXT)",
+                  "SACPZ Files (*.SACPZ)",
+                  "KML Files (*.KML)"]
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Stations", "", ";;".join(flt))
         if fileName:
-            if self.data["stations"] != None:
-                self.data["stations"].write(fileName, format="STATIONXML")
-                self._printLn2(f"saving station data to {fileName}")
+            try:
+                ext = os.path.splitext(fileName)[1].replace(".","").upper()
+                if self.data["stations"] is not None:
+                    if ext == "HYP":
+                        self._save_seisan_hyp(fileName)
+                        self._printLn2(f"saving station data to {fileName}")
+                    else:
+                        self.data["stations"].write(fileName, format=ext)
+                        self._printLn2(f"saving station data to {fileName}")
+            except:
+                pass
+
+    def _save_seisan_hyp(self, filename):
+        inv = self.data["stations"]
+        with open(filename, 'w') as f:
+            stat_lis = []
+            for netObj in inv:
+                for stObj in netObj:
+                    for chObj in stObj:
+                        sta = stObj._code
+                        if sta not in stat_lis:
+                            stat_lis.append(sta)
+                            if len(sta) > 5: continue
+                            str_sta = f"  {sta:4}" if (len(sta) <= 4) else f" {sta:5}"
+                            lat = chObj._latitude
+                            slat = "N" if (np.sign(lat) >= 0) else "S"
+                            lat = np.abs(lat)
+                            dlat = int(lat)
+                            mlat = 60 * (lat - dlat)
+                            lon = chObj._longitude
+                            slon = "E" if (np.sign(lon) >= 0) else "W"
+                            lon = np.abs(lon)
+                            dlon = int(lon)
+                            mlon = 60 * (lon - dlon)
+                            elev = chObj._elevation
+                            elev = int(elev)
+                            s_hyp = f"{str_sta}{dlat:2d}{mlat:5.2f}{slat:1}{dlon:3d}{mlon:5.2f}{slon:1}{elev:4d}\n"
+                            f.write(s_hyp)
 
     def _on_btn_save_phase_clicked(self):
         """
