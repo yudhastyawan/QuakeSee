@@ -52,10 +52,16 @@ class SearchByMaps(QtWidgets.QWidget):
         # - (not used) search filter   : ["?H?", "[BHE]*"]
         url_keys = list(URL_MAPPINGS.keys())
         url_keys.remove('IRISPH5')
+        cl_ev_keys = ["AUSPASS", "BGR", "EIDA", "EMSC", "ETH", "GEOFON", "GEONET", 
+                      "GFZ", "ICGC", "IESDMC", "INGV", "IPGP", "IRIS", "IRISPH5", 
+                      "ISC", "KNMI", "KOERI", "LMU", "NCEDC", "NIEP", "NOA", "ODC", 
+                      "ORFEUS", "RASPISHAKE", "RESIF", "RESIFPH5", "SCEDC", "TEXNET", 
+                      "UIB-NORSAR", "USGS", "USP"]
         self.configs = {
             "base clients"            : url_keys,
             "selected clients"        : url_keys,
             "client events"           : "GFZ",
+            "available client events" : cl_ev_keys,
             "Mmin"                    : 4,
             "Mmax"                    : None,
             "waveform time"           : [-2,200],
