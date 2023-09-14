@@ -229,7 +229,11 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QTableView" name="table_events"/>
+         <widget class="QTableView" name="table_events">
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -376,9 +380,23 @@
            </widget>
           </item>
           <item>
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Select Stations:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btn_selectstations">
             <property name="text">
-             <string>Select Stations</string>
+             <string>Free Shape</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -386,16 +404,31 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btn_getwaves">
+           <widget class="QPushButton" name="btn_selectstations_circle">
             <property name="text">
-             <string>Get Waveforms</string>
+             <string>Circle</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btn_showwaves">
+           <widget class="QLineEdit" name="txt_circle">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="whatsThis">
+             <string/>
+            </property>
             <property name="text">
-             <string>Show Waveforms</string>
+             <string>15</string>
+            </property>
+            <property name="placeholderText">
+             <string>radius (deg)</string>
             </property>
            </widget>
           </item>
@@ -417,6 +450,20 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
+           <widget class="QPushButton" name="btn_getwaves">
+            <property name="text">
+             <string>Get Waveforms</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_showwaves">
+            <property name="text">
+             <string>Show Waveforms</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btn_save_stations">
             <property name="text">
              <string>Save Selected Stations</string>
@@ -426,7 +473,7 @@
           <item>
            <widget class="QPushButton" name="btn_save_waveforms">
             <property name="text">
-             <string>Save Waveforms (mseed)</string>
+             <string>Save Waveforms</string>
             </property>
            </widget>
           </item>
@@ -739,6 +786,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_selectstations_circle</sender>
+   <signal>clicked()</signal>
+   <receiver>search_by_maps</receiver>
+   <slot>_on_btn_selectstations_circle_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>557</x>
+     <y>604</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>655</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>_show_waveforms()</slot>
@@ -752,5 +815,6 @@
   <slot>_save_waveforms()</slot>
   <slot>_on_btn_selectevent_tbl_clicked()</slot>
   <slot>_on_btn_save_events_clicked()</slot>
+  <slot>_on_btn_selectstations_circle_clicked()</slot>
  </slots>
 </ui>

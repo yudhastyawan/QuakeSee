@@ -144,8 +144,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.__wave_df = pd.DataFrame.from_dict(data)
         self.__table_model = TableModel(self.__wave_df)
         self.table_waves.setModel(self.__table_model)
-        self.table_waves.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table_waves.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+        # self.table_waves.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        # self.table_waves.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
 
     def __set_table_phase(self):
         data_phase = {"network":[], "station":[], "location":[]}
@@ -163,8 +163,8 @@ class LoadDataWaveforms(QtWidgets.QWidget):
         self.__phase_df = pd.DataFrame.from_dict(data_phase)
         self.__table_phase_model = TableModel(self.__phase_df)
         self.table_phase.setModel(self.__table_phase_model)
-        self.table_phase.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table_phase.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+        # self.table_phase.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        # self.table_phase.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
 
     def contextMenuEvent(self, event):
         self.menu = QtWidgets.QMenu(self.table_waves)

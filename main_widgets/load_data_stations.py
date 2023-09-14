@@ -63,8 +63,8 @@ class LoadDataStations(QtWidgets.QWidget):
                 self.__station_df = pd.DataFrame.from_dict(st_dict)
                 self.__table_station_model = TableModel(self.__station_df)
                 self.table_stations.setModel(self.__table_station_model)
-                self.table_stations.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-                self.table_stations.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+                # self.table_stations.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+                # self.table_stations.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
 
             except: pass
     

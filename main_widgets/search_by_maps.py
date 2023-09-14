@@ -15,6 +15,7 @@ from obspy.clients.fdsn.client import Client
 from obspy.clients.fdsn import RoutingClient
 from pyproj import Geod
 from matplotlib.transforms import blended_transform_factory
+from matplotlib.patches import Circle
 
 from libs.select_from_collection import SelectFromCollection
 from widgets.messagebox import MBox, MBoxLbl
@@ -56,12 +57,18 @@ class SearchByMaps(QtWidgets.QWidget):
             "selected clients"        : url_keys,
             "client events"           : "GFZ",
             "Mmin"                    : 4,
+            "Mmax"                    : None,
             "waveform time"           : [-2,200],
             "network filter"          : "*",
             "station filter"          : "*",
             "channel filter"          : "BH?,EH?,HH?",
             "geod reference"          : 'WGS84',
             "show waveform component" : 'Z',
+            "includeallorigins"       : False,
+            "includeallmagnitudes"    : False,
+            "includearrivals"         : False,
+            "mindepth"                : None,
+            "maxdepth"                : None
         }
 
         # configs base
@@ -92,6 +99,7 @@ class SearchByMaps(QtWidgets.QWidget):
         self.__map_df       = None
         self.stat_txts      = []
         self.accepted_bulks = []
+        self._circ          = None
 
 
         # initial state
@@ -200,8 +208,15 @@ class SearchByMaps(QtWidgets.QWidget):
 
         try:
             client = Client(self.configs["client events"])
-            self.data["events"] = client.get_events(starttime=t1, endtime=t2, minmagnitude=self.configs["Mmin"], 
-                                    minlongitude=minlon, maxlongitude=maxlon, minlatitude=minlat, maxlatitude=maxlat)
+            self.data["events"] = client.get_events(
+                starttime=t1, endtime=t2, 
+                minmagnitude=self.configs["Mmin"], maxmagnitude=self.configs["Mmax"],
+                includeallorigins=self.configs["includeallorigins"],
+                includeallmagnitudes=self.configs["includeallmagnitudes"],
+                includearrivals=self.configs["includearrivals"],
+                mindepth=self.configs["mindepth"], maxdepth=self.configs["maxdepth"],
+                minlongitude=minlon, maxlongitude=maxlon, 
+                minlatitude=minlat, maxlatitude=maxlat)
             x = []
             y = []
             m = []
@@ -389,6 +404,10 @@ class SearchByMaps(QtWidgets.QWidget):
                 self.mpl_select_map_2.mpl.draw()
                 self.stat_txts = []
 
+            if self._circ is not None:
+                self._circ.remove()
+                self._circ = None
+
             if bool == True:
                 ax = self.mpl_select_map_2.mpl.axes
                 self.stat_selector = SelectFromCollection(ax, self.stat_points)
@@ -400,11 +419,56 @@ class SearchByMaps(QtWidgets.QWidget):
         except:
             MBoxLbl("Error selecting stations!", self)
 
+    def _on_btn_selectstations_circle_clicked(self):
+        try:
+            if self.stat_txts != []:
+                for txt in self.stat_txts:
+                    txt.remove()
+                self.mpl_select_map_2.mpl.draw()
+                self.stat_txts = []
+            
+            if self._circ is not None:
+                self._circ.remove()
+                self._circ = None
+
+            ax = self.mpl_select_map_2.mpl.axes
+            canvas = ax.figure.canvas
+            
+            evlon = self.data["selected event"].origins[0].longitude
+            evlat = self.data["selected event"].origins[0].latitude
+            self._circ = Circle((evlon, evlat), radius = float(self.txt_circle.text()))
+
+            xys = self.stat_points.get_offsets()
+            Npts = len(xys)
+
+            fc = self.stat_points.get_facecolors()
+            if len(fc) == 1:
+                fc = np.tile(fc, (Npts, 1))
+            ind = np.nonzero(self._circ.contains_points(xys))[0]
+            fc[:, -1] = 0.3
+            fc[ind, -1] = 1
+            self.stat_points.set_facecolors(fc)
+
+            self._circ.set_facecolor('none')
+            self._circ.set_edgecolor('red')
+            ax.add_artist(self._circ)
+            canvas.draw()
+
+            self.__select_stations_by_indices_base(ind)
+
+        except:
+            MBoxLbl("Error selecting stations!", self)
+
     def __select_stations_by_indices(self):
         """
         """
+        self.__select_stations_by_indices_base(self.stat_selector.ind)
+
+    def __select_stations_by_indices_base(self, ind):
+        """
+        """
         self.data["selected stations"] = None
-        for __n, idx in enumerate(self.stat_selector.ind):
+        for __n, idx in enumerate(ind):
             i, j = self.__pass_inv[f"{idx}"]
             inv_i = self.data["stations"][i][j]
             net = self.data["stations"][i]._code
