@@ -70,8 +70,12 @@ class LoadDataStations(QtWidgets.QWidget):
     
     def contextMenuEvent(self, event):
         self.menu = QtWidgets.QMenu(self.table_stations)
-        self.plot_menu = self.menu.addAction("Plot Response")
-        self.plot_menu.triggered.connect(self.__on_plot_menu_clicked)
+        self.plot_menu_disp = self.menu.addAction("Plot Response (DISP)")
+        self.plot_menu_disp.triggered.connect(self.__on_plot_menu_disp_clicked)
+        self.plot_menu_vel = self.menu.addAction("Plot Response (VEL)")
+        self.plot_menu_vel.triggered.connect(self.__on_plot_menu_clicked)
+        self.plot_menu_acc = self.menu.addAction("Plot Response (ACC)")
+        self.plot_menu_acc.triggered.connect(self.__on_plot_menu_acc_clicked)
         self.plot_menu_loc = self.menu.addAction("Plot Location")
         self.plot_menu_loc.triggered.connect(self.__on_plot_menu_loc_clicked)
         self.menu.exec_(event.globalPos())
@@ -80,11 +84,23 @@ class LoadDataStations(QtWidgets.QWidget):
         idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]
         for idx in idcs:
             n, s, l, c = self.__station_df.loc[idx, ["network", "station", "location", "channel"]]
-            self.__inv.plot_response(0.001, network=n, station=s, location=l, channel=c)
+            self.__inv.plot_response(0.001, output='VEL', network=n, station=s, location=l, channel=c)
 
         # self.__st = ob.Stream([self.data["waveforms"].traces[i] for i in self.__plot_rows])
         # self.__show_waveplots(self.tab_waveplots.widgetCanvas.mpl, self.__st)
         # self.__update_mpl_to_tight(self.tab_waveplots.widgetCanvas.mpl)
+
+    def __on_plot_menu_disp_clicked(self):
+        idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]
+        for idx in idcs:
+            n, s, l, c = self.__station_df.loc[idx, ["network", "station", "location", "channel"]]
+            self.__inv.plot_response(0.001, output='DISP', network=n, station=s, location=l, channel=c)
+
+    def __on_plot_menu_acc_clicked(self):
+        idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]
+        for idx in idcs:
+            n, s, l, c = self.__station_df.loc[idx, ["network", "station", "location", "channel"]]
+            self.__inv.plot_response(0.001, output='ACC', network=n, station=s, location=l, channel=c)
 
     def __on_plot_menu_loc_clicked(self):
         idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]
