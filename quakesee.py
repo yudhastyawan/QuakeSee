@@ -111,6 +111,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionConvert_Lonlat_to_Distance_3D.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(True))
         self.actionPreview_3D_Lon_Lat_degree.triggered.connect(lambda: self.create_oq._CreateOQ__view_3D_after_fault_cut(False))
         self.actionLoad_Events.triggered.connect(self.search_by_maps._on_btn_load_events_clicked)
+        self.actionSave_Responses_as_SACPZ_SEISAN_filename.triggered.connect(self.load_data_stations._save_seisan_sacpz)
+        self.actionLoad_Stations.triggered.connect(self.search_by_maps._load_station_in_map)
 
     def run_kernel(self):
         self.py_console.run_kernel(self.py_editor.toPlainText())

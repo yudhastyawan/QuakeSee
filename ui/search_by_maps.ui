@@ -478,6 +478,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="chk_merge_traces">
+            <property name="text">
+             <string>Merge sliced traces</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer_6">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -539,12 +549,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>MplCanvasBaseWithToolbar</class>
-   <extends>QWidget</extends>
-   <header>widgets.mplcanvas</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>MplCanvasMapWithToolbar</class>
    <extends>QWidget</extends>
    <header>widgets.mplcanvas</header>
@@ -553,6 +557,12 @@
     <slot>select_rectangle(bool)</slot>
     <slot>select_event(bool)</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>MplCanvasBaseWithToolbar</class>
+   <extends>QWidget</extends>
+   <header>widgets.mplcanvas</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>DateTimeEdit</class>

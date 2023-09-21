@@ -64,6 +64,7 @@
       <property name="title">
        <string>Select Stations</string>
       </property>
+      <addaction name="actionLoad_Stations"/>
       <addaction name="actionSave_Selected_Stations_XML"/>
       <addaction name="actionSave_Waveforms_mseed"/>
      </widget>
@@ -98,8 +99,15 @@
      </widget>
      <addaction name="menuFault"/>
     </widget>
+    <widget class="QMenu" name="menuLoad_Station_Data">
+     <property name="title">
+      <string>Load Station Data</string>
+     </property>
+     <addaction name="actionSave_Responses_as_SACPZ_SEISAN_filename"/>
+    </widget>
     <addaction name="menuSearch_By_Maps"/>
     <addaction name="menuLoad_Waveform_Data"/>
+    <addaction name="menuLoad_Station_Data"/>
     <addaction name="separator"/>
     <addaction name="menuCreate_OQ_Inputs"/>
    </widget>
@@ -467,6 +475,16 @@
   <action name="actionLoad_Events">
    <property name="text">
     <string>Load Events</string>
+   </property>
+  </action>
+  <action name="actionSave_Responses_as_SACPZ_SEISAN_filename">
+   <property name="text">
+    <string>Save Responses as SACPZ (SEISAN filename)</string>
+   </property>
+  </action>
+  <action name="actionLoad_Stations">
+   <property name="text">
+    <string>Load Stations</string>
    </property>
   </action>
  </widget>

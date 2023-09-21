@@ -12,6 +12,7 @@ from matplotlib.transforms import blended_transform_factory
 import pandas as pd
 import numpy as np
 import matplotlib as mplib
+from obspy.core.inventory.response import paz_to_sacpz_string
 
 class LoadDataStations(QtWidgets.QWidget):
     def __init__(self, parent = None):
@@ -178,3 +179,35 @@ class LoadDataStations(QtWidgets.QWidget):
                     elev = int(elev)
                     s_hyp = f"{str_sta}{dlat:2d}{mlat:5.2f}{slat:1}{dlon:3d}{mlon:5.2f}{slon:1}{elev:4d}\n"
                     f.write(s_hyp)
+
+    def _save_seisan_sacpz(self):
+        dir_name = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a Directory")
+        if dir_name:
+            if self.__inv is not None:
+                for netObj in self.__inv:
+                    for stObj in netObj:
+                        for chObj in stObj:
+                            resp = chObj.response
+                            sens = resp.instrument_sensitivity
+                            try:
+                                paz = resp.get_paz()
+                            except:
+                                continue
+                            input_unit = sens.input_units.upper()
+                            if input_unit == "M":
+                                pass
+                            elif input_unit in ["M/S", "M/SEC"]:
+                                paz.zeros.append(0j)
+                            elif input_unit in ["M/S**2", "M/SEC**2"]:
+                                paz.zeros.extend([0j, 0j])
+                            else:
+                                continue
+                            sacpz = paz_to_sacpz_string(paz, sens)
+                            sta = f"{stObj._code:5}".replace(" ", "_")
+                            chan = chObj._code[0] + "__" + chObj._code[-1]
+                            stdate = stObj.start_date.strftime("%Y-%m-%d-%H%M")
+                            # sacpz = chObj.response.get_sacpz()
+                            fname = sta + chan + "." + stdate + "_SAC"
+                            with open(os.path.join(dir_name, fname), "w") as f:
+                                f.write(sacpz)
+                self._printLn("sacpz files has been saved in " + dir_name)

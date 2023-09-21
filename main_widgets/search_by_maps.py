@@ -381,6 +381,39 @@ class SearchByMaps(QtWidgets.QWidget):
             if self.worker != None:
                 self.worker.progress.emit("error during the process, check internet connection!")
     
+    def _load_station_in_map(self):
+        """
+        """
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Station File", "", "XML Files (*.STATIONXML *.xml)")
+        if fileName:
+            try:
+                self._printLn("read data " + fileName) 
+                self.data["stations"] = ob.read_inventory(fileName)
+                self.data["selected stations"] = self.data["stations"]
+                    
+                x = []
+                y = []
+                self.__pass_inv = dict()
+                __n = 0
+                for i, net in enumerate(self.data["stations"]):
+                    for j, stat in enumerate(net):
+                        x.append(stat._longitude)
+                        y.append(stat._latitude)
+                        self.__pass_inv[f"{__n}"] = [i,j]
+                        __n += 1
+
+
+                ax = self.mpl_select_map_2.mpl.axes
+
+                self.stat_points = ax.scatter(x, y, c='k', s=80, marker='^', clip_on=False)
+                self._printLn("data being plotted . . .")
+
+                self.stat_selector = SelectFromCollection(ax, self.stat_points)
+                self.mpl_select_map_2.mpl.draw()
+                self._printLn("finished!")
+            except:
+                self._printLn("error!")
+    
     def show_events_in_mpl_2(self, mpl):
         """
         """
@@ -647,7 +680,10 @@ class SearchByMaps(QtWidgets.QWidget):
         if fileName:
             if self.data["waveforms"] != None:
                 ext = os.path.splitext(fileName)[1]
-                self.data["waveforms"].write(fileName, format=ext.replace(".","").upper())
+                st = self.data["waveforms"].copy()
+                if self.chk_merge_traces.isChecked():
+                    st.merge(method=1, interpolation_samples=-1, fill_value='interpolate')
+                st.write(fileName, format=ext.replace(".","").upper())
                 self._printLn2(f"saving waveform data to {fileName}")
 
     def _on_btn_save_events_clicked(self):
