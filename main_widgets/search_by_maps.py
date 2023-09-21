@@ -22,6 +22,7 @@ from widgets.messagebox import MBox, MBoxLbl
 from libs.commons import Worker
 from libs.utils import TableModel
 import matplotlib.pyplot as plt
+from obspy.taup import TauPyModel
 
 class SearchByMaps(QtWidgets.QWidget):
     """
@@ -64,7 +65,7 @@ class SearchByMaps(QtWidgets.QWidget):
             "available client events" : cl_ev_keys,
             "Mmin"                    : 4,
             "Mmax"                    : None,
-            "waveform time"           : [-2,200],
+            "waveform time"           : [-2,400],
             "network filter"          : "*",
             "station filter"          : "*",
             "channel filter"          : "BH?,EH?,HH?",
@@ -122,7 +123,11 @@ class SearchByMaps(QtWidgets.QWidget):
             "_map"              :self,
             "map_configs"       :self.configs,
             "map_data"          :self.data,
-            "map_configs_reset" :self.reset_configs
+            "map_configs_reset" :self.reset_configs,
+            "check_tt"          :self.check_tt,
+            "check_ray"         :self.check_ray,
+            "set_twmin"         :self.set_twmin,
+            "set_twmax"         :self.set_twmax
         }
 
         # a function to push kernel to console
@@ -147,6 +152,26 @@ class SearchByMaps(QtWidgets.QWidget):
         # set datetime
         self.datetime_start.setDateTime(QtCore.QDateTime.currentDateTime().addSecs(- 5 * 60).addDays(- 1))
         self.datetime_end.setDateTime(QtCore.QDateTime.currentDateTime().addSecs(- 5 * 60))
+
+    def check_tt(self, depth_km, dist_deg, phases_list, model="iasp91"):
+        model = TauPyModel(model=model)
+        arrivals = model.get_travel_times(source_depth_in_km=depth_km,
+                                  distance_in_degree=dist_deg,
+                                  phase_list=phases_list)
+        self._printLn(str(arrivals))
+
+    def check_ray(self, depth_km, dist_deg, phases_list, plot_type='spherical', model="iasp91", indicate_wave_type=True):
+        model = TauPyModel(model=model)
+        arrivals = model.get_ray_paths(source_depth_in_km=depth_km,
+                                  distance_in_degree=dist_deg,
+                                  phase_list=phases_list)
+        ax = arrivals.plot_rays(plot_type=plot_type, indicate_wave_type=indicate_wave_type)
+
+    def set_twmin(self, t_sec):
+        self.configs["waveform time"][0] = t_sec
+
+    def set_twmax(self, t_sec):
+        self.configs["waveform time"][1] = t_sec
         
     def reset_configs(self):
         """
@@ -340,9 +365,11 @@ class SearchByMaps(QtWidgets.QWidget):
     def _show_stations(self):
         """
         """
-
-        t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
-        t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
+        otime = self.data["selected event"].origins[0].time
+        t1 = otime + self.configs["waveform time"][0]
+        t2 = otime + self.configs["waveform time"][1]
+        # t1 = ob.UTCDateTime(self.datetime_start.dateTime().toPyDateTime())
+        # t2 = ob.UTCDateTime(self.datetime_end.dateTime().toPyDateTime())
         (minlon, maxlon), (minlat, maxlat) = self.mpl_select_map_2.mpl.data
 
         if self.worker != None:
@@ -377,8 +404,77 @@ class SearchByMaps(QtWidgets.QWidget):
             self.stat_selector = SelectFromCollection(ax, self.stat_points)
             self.mpl_select_map_2.mpl.draw()
         
-        except:
+        except Exception as error:
             if self.worker != None:
+                self.worker.progress.emit(str(type(error).__name__) + "–" + str(error))
+                self.worker.progress.emit("error during the process, check internet connection!")
+
+    def _on_btn_show_stations_circ_clicked(self):
+        """
+        """
+        self.thread = QtCore.QThread()
+        self.worker = Worker(self._show_stations_circ)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(lambda: self._printLn("finished!"))
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.progress[str].connect(self._printLn)
+        self.thread.start()
+
+        # Final resets
+        self.btn_showstations_circ.setEnabled(False)
+        self.thread.finished.connect(
+            lambda: self.btn_showstations_circ.setEnabled(True)
+        )
+
+    def _show_stations_circ(self):
+        """
+        """
+
+        otime = self.data["selected event"].origins[0].time
+        t1 = otime + self.configs["waveform time"][0]
+        t2 = otime + self.configs["waveform time"][1]
+        evlon = self.data["selected event"].origins[0].longitude
+        evlat = self.data["selected event"].origins[0].latitude
+
+        if self.worker != None:
+            self.worker.progress.emit("\nsearch stations . . .")
+
+        try:
+            minr = float(self.txt_circle_min.text())
+            maxr = float(self.txt_circle_max.text())
+            client = RoutingClient("iris-federator")
+            self.data["stations"] = client.get_stations(network=self.configs["network filter"], channel=self.configs["channel filter"], starttime=t1,
+                                        endtime=t2,level="response",
+                                        latitude=evlat, longitude=evlon, minradius=minr, maxradius=maxr)
+            # self.data["stations"] = self.data["stations"].select(network=self.configs["network filter"], channel=self.configs["channel filter"][1])
+            self.data["selected stations"] = self.data["stations"]
+            
+            x = []
+            y = []
+            self.__pass_inv = dict()
+            __n = 0
+            for i, net in enumerate(self.data["stations"]):
+                for j, stat in enumerate(net):
+                    x.append(stat._longitude)
+                    y.append(stat._latitude)
+                    self.__pass_inv[f"{__n}"] = [i,j]
+                    __n += 1
+
+
+            ax = self.mpl_select_map_2.mpl.axes
+
+            self.stat_points = ax.scatter(x, y, c='k', s=80, marker='^', clip_on=False)
+            if self.worker != None:
+                self.worker.progress.emit("data being plotted . . .")
+
+            self.mpl_select_map_2.mpl.draw()
+        
+        except Exception as error:
+            if self.worker != None:
+                self.worker.progress.emit(str(type(error).__name__) + "–" + str(error))
                 self.worker.progress.emit("error during the process, check internet connection!")
     
     def _load_station_in_map(self):
@@ -408,7 +504,6 @@ class SearchByMaps(QtWidgets.QWidget):
                 self.stat_points = ax.scatter(x, y, c='k', s=80, marker='^', clip_on=False)
                 self._printLn("data being plotted . . .")
 
-                self.stat_selector = SelectFromCollection(ax, self.stat_points)
                 self.mpl_select_map_2.mpl.draw()
                 self._printLn("finished!")
             except:

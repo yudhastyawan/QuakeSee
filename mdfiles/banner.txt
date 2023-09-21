@@ -16,3 +16,6 @@ Change a certain param:
 Reset the configs:
     [map/wave]_configs_reset()
 
+Check estimated traveltimes:
+    check_tt(depth_km, dist_deg, phases_list, model="iasp91")
+    example: check_tt(55, 5, ["P", "S"])
