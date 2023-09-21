@@ -4,7 +4,7 @@ import geopandas as gpd
 import os
 from libs.commons import Worker
 from libs.utils import TableModel
-from widgets.mplcanvas import MplCanvasBaseWithToolbar
+from widgets.mplcanvas import MplCanvasBaseWithToolbarTab
 from obspy.clients.fdsn.header import URL_MAPPINGS
 from obspy.clients.fdsn.client import Client
 from pyproj import Geod
@@ -83,9 +83,21 @@ class LoadDataStations(QtWidgets.QWidget):
 
     def __on_plot_menu_clicked(self):
         idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]
-        for idx in idcs:
+        self._resp_wid = MplCanvasBaseWithToolbarTab(N=len(idcs))
+        for i, idx in enumerate(idcs):
+            ax = self._resp_wid.canvas[i].mpl.axes
+            fig = ax.figure
+            fig.clf()
+            axes = [fig.add_axes([0.1, 0.5, 0.7, 0.4]), fig.add_axes([0.1, 0.1, 0.7, 0.4])]
             n, s, l, c = self.__station_df.loc[idx, ["network", "station", "location", "channel"]]
-            self.__inv.plot_response(0.001, output='VEL', network=n, station=s, location=l, channel=c)
+            self.__inv.plot_response(0.001, output='VEL', network=n, station=s, 
+                                     location=l, channel=c, show=False, axes=axes)
+        self._resp_wid.show()
+
+        # idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]
+        # for idx in idcs:
+        #     n, s, l, c = self.__station_df.loc[idx, ["network", "station", "location", "channel"]]
+        #     self.__inv.plot_response(0.001, output='VEL', network=n, station=s, location=l, channel=c)
 
         # self.__st = ob.Stream([self.data["waveforms"].traces[i] for i in self.__plot_rows])
         # self.__show_waveplots(self.tab_waveplots.widgetCanvas.mpl, self.__st)
@@ -93,15 +105,29 @@ class LoadDataStations(QtWidgets.QWidget):
 
     def __on_plot_menu_disp_clicked(self):
         idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]
-        for idx in idcs:
+        self._resp_wid = MplCanvasBaseWithToolbarTab(N=len(idcs))
+        for i, idx in enumerate(idcs):
+            ax = self._resp_wid.canvas[i].mpl.axes
+            fig = ax.figure
+            fig.clf()
+            axes = [fig.add_axes([0.1, 0.5, 0.7, 0.4]), fig.add_axes([0.1, 0.1, 0.7, 0.4])]
             n, s, l, c = self.__station_df.loc[idx, ["network", "station", "location", "channel"]]
-            self.__inv.plot_response(0.001, output='DISP', network=n, station=s, location=l, channel=c)
+            self.__inv.plot_response(0.001, output='DISP', network=n, station=s, 
+                                     location=l, channel=c, show=False, axes=axes)
+        self._resp_wid.show()
 
     def __on_plot_menu_acc_clicked(self):
         idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]
-        for idx in idcs:
+        self._resp_wid = MplCanvasBaseWithToolbarTab(N=len(idcs))
+        for i, idx in enumerate(idcs):
+            ax = self._resp_wid.canvas[i].mpl.axes
+            fig = ax.figure
+            fig.clf()
+            axes = [fig.add_axes([0.1, 0.5, 0.7, 0.4]), fig.add_axes([0.1, 0.1, 0.7, 0.4])]
             n, s, l, c = self.__station_df.loc[idx, ["network", "station", "location", "channel"]]
-            self.__inv.plot_response(0.001, output='ACC', network=n, station=s, location=l, channel=c)
+            self.__inv.plot_response(0.001, output='ACC', network=n, station=s, 
+                                     location=l, channel=c, show=False, axes=axes)
+        self._resp_wid.show()
 
     def __on_plot_menu_loc_clicked(self):
         idcs = [idx.row() for idx in self.table_stations.selectionModel().selectedRows()]

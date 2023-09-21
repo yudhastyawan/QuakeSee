@@ -125,3 +125,18 @@ class MplCanvasBase3DWithToolbar(QtWidgets.QWidget):
         self.vlayout.addWidget(self.toolbar)
         self.vlayout.addWidget(self.mpl)
         self.setLayout(self.vlayout)
+
+class MplCanvasBaseWithToolbarTab(QtWidgets.QWidget):
+    def __init__(self, parent=None, N=1):
+        QtWidgets.QWidget.__init__(self, parent)
+
+        self.vlayout = QtWidgets.QVBoxLayout()
+        self.vlayout.setContentsMargins(0,0,0,0)
+        self.vlayout.setSpacing(0)
+        self.tab = QtWidgets.QTabWidget()
+        self.canvas = list()
+        for i in range(N):
+            self.canvas.append(MplCanvasBase3DWithToolbar())
+            self.tab.addTab(self.canvas[i], f"{i+1}")
+        self.vlayout.addWidget(self.tab)
+        self.setLayout(self.vlayout)
