@@ -23,6 +23,7 @@ from libs.commons import Worker
 from libs.utils import TableModel
 import matplotlib.pyplot as plt
 from obspy.taup import TauPyModel
+from widgets.mplcanvas import MplCanvasBaseWithToolbar
 
 class SearchByMaps(QtWidgets.QWidget):
     """
@@ -165,7 +166,13 @@ class SearchByMaps(QtWidgets.QWidget):
         arrivals = model.get_ray_paths(source_depth_in_km=depth_km,
                                   distance_in_degree=dist_deg,
                                   phase_list=phases_list)
-        ax = arrivals.plot_rays(plot_type=plot_type, indicate_wave_type=indicate_wave_type)
+        
+        self._ray_wid = MplCanvasBaseWithToolbar()
+        self._ray_wid.setWindowTitle("Ray Paths")
+        ax = self._ray_wid.mpl.axes
+        ax.figure.clf()
+        arrivals.plot_rays(plot_type=plot_type, indicate_wave_type=indicate_wave_type, fig=ax.figure, show=False)
+        self._ray_wid.show()
 
     def set_twmin(self, t_sec):
         self.configs["waveform time"][0] = t_sec

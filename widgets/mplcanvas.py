@@ -1,4 +1,6 @@
 import sys
+import typing
+from PyQt5.QtWidgets import QWidget
 import matplotlib
 matplotlib.use('Qt5Agg')
 

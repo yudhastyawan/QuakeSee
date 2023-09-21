@@ -362,6 +362,9 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item>
            <widget class="QLabel" name="label_2">
             <property name="text">
@@ -408,6 +411,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="statusTip">
              <string/>
             </property>
@@ -436,6 +445,12 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
             </property>
             <property name="statusTip">
              <string/>
@@ -475,6 +490,9 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item>
            <widget class="QLabel" name="label">
             <property name="text">
@@ -514,6 +532,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="statusTip">
              <string/>
             </property>
@@ -545,6 +569,9 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item>
            <widget class="QPushButton" name="btn_getwaves">
             <property name="text">
