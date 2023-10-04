@@ -182,11 +182,14 @@ class SearchByMaps(QtWidgets.QWidget):
         fig = ax.figure
         fig.clf()
         ax = plot_travel_times(source_depth_km, fig=fig, show=False, **kwargs)
+
+        # add minor ticks
         if minor:
             ax.grid(visible=True, which='minor')
             ax.minorticks_on()
             ax.grid(visible=True, which='major', linewidth=2)
             ax.figure.canvas.draw()
+            
         self._ray_wid.show()
         return ax
 
