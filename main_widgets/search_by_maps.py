@@ -176,6 +176,9 @@ class SearchByMaps(QtWidgets.QWidget):
         self._ray_wid.show()
 
     def check_plot_tt(self, source_depth_km, minor=False, **kwargs):
+        """
+        https://docs.obspy.org/packages/autogen/obspy.taup.tau.plot_travel_times.html
+        """
         self._ray_wid = MplCanvasBaseWithToolbar()
         self._ray_wid.setWindowTitle("Travel Times")
         ax = self._ray_wid.mpl.axes
@@ -189,7 +192,7 @@ class SearchByMaps(QtWidgets.QWidget):
             ax.minorticks_on()
             ax.grid(visible=True, which='major', linewidth=2)
             ax.figure.canvas.draw()
-            
+
         self._ray_wid.show()
         return ax
 
