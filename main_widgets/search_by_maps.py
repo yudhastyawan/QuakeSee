@@ -22,7 +22,7 @@ from widgets.messagebox import MBox, MBoxLbl
 from libs.commons import Worker
 from libs.utils import TableModel
 import matplotlib.pyplot as plt
-from obspy.taup import TauPyModel
+from obspy.taup import TauPyModel, plot_travel_times
 from widgets.mplcanvas import MplCanvasBaseWithToolbar
 
 class SearchByMaps(QtWidgets.QWidget):
@@ -127,6 +127,7 @@ class SearchByMaps(QtWidgets.QWidget):
             "map_configs_reset" :self.reset_configs,
             "check_tt"          :self.check_tt,
             "check_ray"         :self.check_ray,
+            "check_plot_tt"     :self.check_plot_tt,
             "set_twmin"         :self.set_twmin,
             "set_twmax"         :self.set_twmax
         }
@@ -173,6 +174,21 @@ class SearchByMaps(QtWidgets.QWidget):
         ax.figure.clf()
         arrivals.plot_rays(plot_type=plot_type, indicate_wave_type=indicate_wave_type, fig=ax.figure, show=False)
         self._ray_wid.show()
+
+    def check_plot_tt(self, source_depth_km, minor=False, **kwargs):
+        self._ray_wid = MplCanvasBaseWithToolbar()
+        self._ray_wid.setWindowTitle("Travel Times")
+        ax = self._ray_wid.mpl.axes
+        fig = ax.figure
+        fig.clf()
+        ax = plot_travel_times(source_depth_km, fig=fig, show=False, **kwargs)
+        if minor:
+            ax.grid(visible=True, which='minor')
+            ax.minorticks_on()
+            ax.grid(visible=True, which='major', linewidth=2)
+            ax.figure.canvas.draw()
+        self._ray_wid.show()
+        return ax
 
     def set_twmin(self, t_sec):
         self.configs["waveform time"][0] = t_sec
