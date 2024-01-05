@@ -254,7 +254,9 @@ class DownloadISC(QtWidgets.QWidget):
                 else:
                     return [0, 0., 0.]
 
-            for fname in fileNames:
+            all_outlists = []
+            first_name = ""
+            for fi, fname in enumerate(fileNames):
                 self.worker.progress.emit("converting " + os.path.split(fname)[-1])
                 with open(fname, "r") as f:
                     text = f.read()
@@ -264,10 +266,16 @@ class DownloadISC(QtWidgets.QWidget):
                     data_string = text[idx:id_stop].replace(" ", "")
                     data_split = data_string.split('\n')[2::]
                     data_split.remove('')
-                    data_string = "\n".join([",".join(d.split(',')[0:9]) for d in data_split])
+                    data_string = [",".join(d.split(',')[0:9]) for d in data_split]
                     data_mag = [d.split(',')[9::] for d in data_split]
                     data_mag = [[x for x in d if x != ''] for d in data_mag]
+                    data_idcs = [j for j,d in enumerate(data_mag) if d != []]
+                    data_string = [data_string[j] for j in data_idcs]
                     data_mag = [d for d in data_mag if d != []]
+
+                if data_string == []: continue
+
+                data_string = "\n".join(data_string)
 
                 names = ["EVENTID","TYPE","AUTHOR","DATE","TIME","LAT","LON","DEPTH","DEPFIX"]
 
@@ -281,8 +289,7 @@ class DownloadISC(QtWidgets.QWidget):
 
                 Mw_chk = np.where(Mw_list[:,0] == 1)[0]
 
-                outlist = ["eventID,year,month,day,hour,minute,second,longitude,latitude,depth,magnitude,sigmaMagnitude"]
-                outlist += df.iloc[Mw_chk].apply(lambda x: str(x['EVENTID']) + "," + x['DATE'].split('-')[0] + "," + \
+                mainlist = df.iloc[Mw_chk].apply(lambda x: str(x['EVENTID']) + "," + x['DATE'].split('-')[0] + "," + \
                                                             x['DATE'].split('-')[1] + "," + \
                                                             x['DATE'].split('-')[2] + "," + \
                                                             x['TIME'].split(':')[0] + "," + \
@@ -292,9 +299,20 @@ class DownloadISC(QtWidgets.QWidget):
                                                             str(x['LAT']) + "," + \
                                                             str(x['DEPTH']) + "," + \
                                                             f"{x['Mw']:.2f}" + "," + f"{x['s_Mw']:.2f}", axis=1).to_list()
+                
+                outlist = ["eventID,year,month,day,hour,minute,second,longitude,latitude,depth,magnitude,sigmaMagnitude"]
+                outlist += mainlist
 
+                
+                all_outlists += mainlist
+                first_name = fname
                 with open(os.path.splitext(fname)[0] + "_OQ.csv", "w") as f:
                     f.write("\n".join(outlist))
+
+            if all_outlists != []:
+                all_outlists.insert(0, "eventID,year,month,day,hour,minute,second,longitude,latitude,depth,magnitude,sigmaMagnitude")
+                with open(os.path.join(os.path.split(first_name)[0],"all_OQ.csv"), "w") as f:
+                    f.write("\n".join(all_outlists))
 
     def _on_btn_add_table_func_clicked(self):
         self.table_func.setRowCount(self.table_func.rowCount() + 1)
