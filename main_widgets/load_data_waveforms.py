@@ -210,8 +210,7 @@ class LoadDataWaveforms(QtWidgets.QWidget):
                 f.write("# START_TIME %s\n" % (str(tr.stats.starttime)))
                 f.write("# SAMP_FREQ %f\n" % (tr.stats.sampling_rate))
                 f.write("# NDAT %d\n" % (tr.stats.npts))
-                np.savetxt(f, np.hstack((np.arange(0,tr.stats.delta * tr.stats.npts, 
-                                                  tr.stats.delta).reshape((tr.stats.npts,1)), 
+                np.savetxt(f, np.hstack((np.arange(0,tr.stats.npts).reshape((tr.stats.npts,1)) * tr.stats.delta, 
                                                   np.reshape(tr.data, (tr.stats.npts,1)))), fmt="%f")
         
         self._printLn("Data have been saved to ascii files.")
