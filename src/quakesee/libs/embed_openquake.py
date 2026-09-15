@@ -205,13 +205,13 @@ def check_shell(pythonbin):
     output = 0
 
     try:
-        subprocess.check_output(call_process, shell=True)
+        subprocess.check_output(call_process, shell=True, stderr=subprocess.DEVNULL)
         output = 1
     except: pass
 
     if output == 0:
         try:
-            subprocess.check_output('arch -arm64 ' + call_process, shell=True)
+            subprocess.check_output('arch -arm64 ' + call_process, shell=True, stderr=subprocess.DEVNULL)
             output = 2
         except: pass
 

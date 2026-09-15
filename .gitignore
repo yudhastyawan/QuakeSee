@@ -246,3 +246,8 @@ compile_commands.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python,qt
+
+### Conda Build ###
+*.conda
+*.tar.bz2
+build_output/

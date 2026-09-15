@@ -1,0 +1,42 @@
+package:
+  name: quakesee
+  version: "1.0.0"
+
+source:
+  path: ..
+
+build:
+  number: 0
+  noarch: python
+  script: "{{ PYTHON }} -m pip install . -vv"
+  entry_points:
+    - quakesee=quakesee.quakesee:main
+
+requirements:
+  host:
+    - python >=3.10
+    - pip
+    - setuptools <70
+    - wheel
+  run:
+    - python >=3.10
+    - pyqt >=5.15.9
+    - cryptography >=3.3
+    - paramiko >=3.3.1
+    - geopandas ==0.12.2
+    - matplotlib ==3.7.0
+    - numpy ==1.24.2
+    - obspy ==1.4.0
+    - pandas ==1.5.3
+    - qtconsole ==5.4.0
+    - scipy ==1.10.0
+    - shapely ==2.0.1
+    - pyyaml ==6.0
+    - sympy ==1.12
+    - fiona <1.9.0
+
+about:
+  home: "https://github.com/yudhastyawan/QuakeSee"
+  summary: "QuakeSee - Earthquake Analysis Tool"
+  license: "MIT"
+  license_file: "../LICENSE"

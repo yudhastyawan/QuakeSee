@@ -10,3 +10,5 @@ shapely==2.0.1
 PyYAML==6.0
 paramiko==3.3.1
 sympy==1.12
+fiona<1.9.0
+setuptools<70

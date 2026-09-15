@@ -4,8 +4,16 @@ Author: Yudha Styawan
 Feel free to use this program, thank you!
 """
 
-from PyQt5 import QtWidgets, uic, QtCore
+import os
 import sys
+
+# Ensure the working directory is the script's directory for relative paths to work
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(APP_DIR)
+if APP_DIR not in sys.path:
+    sys.path.insert(0, APP_DIR)
+
+from PyQt5 import QtWidgets, uic, QtCore
 import matplotlib as mpl
 
 mpl.rcParams['savefig.dpi'] = 300
