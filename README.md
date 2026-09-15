@@ -1,34 +1,42 @@
 # QuakeSee
-A GUI-based program to see distribution of events, stations, and seismograms available in the earthquake data providers
+A GUI-based program to see distribution of events, stations, and seismograms available in the earthquake data providers.
 
 ## Features
 - [x] Download events, station metadata, and waveforms from the open networks
 - [x] Load waveforms, plot, and pick phases
-- [x] forward modeling of HVSR
-- [x] download ISC catalogue and convert to OpenQuake catalogue
+- [x] Forward modeling of HVSR
+- [x] Download ISC catalogue and convert to OpenQuake catalogue
 - [x] Load station metadata (xml) and plot the response and location
 - [x] Live recording (show the real-time waveforms) on the open networks
 - [x] Set the time, access the recording data, and real-time view from RaspberryShake seismometers
 - [x] Calculating Magnitude of Completeness (Mc), b-value from Magnitude-Frequency Distribution (MFD/FMD), and extract the catalogue based on the shape of faults and area (wrapped to Openquake Engine) 
 
+## Installation
+
+QuakeSee is officially distributed as a Conda package, making installation extremely simple across all operating systems (Windows, macOS, Linux).
+
+### Option 1: One-Line Installation (Recommended)
+Open your Anaconda Prompt (Windows) or Terminal (macOS/Linux) and run:
+```bash
+conda create -n quakesee_env -y -c yudha_styawan -c conda-forge quakesee
+conda activate quakesee_env
+```
+
+### Option 2: Installation from Source
+If you prefer to install from source for development purposes:
+```bash
+git clone https://github.com/yudhastyawan/QuakeSee.git
+cd QuakeSee
+conda create -n quakesee_env python=3.10
+conda activate quakesee_env
+pip install -e .
+```
+
 ## How to Use
-Install the reqired packages in `requirements.txt` and run `quakesee.py` in your Python. Enjoy!
-
-> **Notes:** We use python 3.10
-
-### Detail Instruction
-
-1. Install miniconda/anaconda (Download [miniconda](https://docs.conda.io/en/latest/miniconda.html))
-2. Open Anaconda prompt (run as administrator) in Windows / Open terminal in Linux or Mac
-3. Make sure Anaconda is active by seeing `(base)`
-4. Run command `conda create -n quakesee python=3.10`
-5. Run command `conda activate quakesee`
-6. [Download](https://github.com/yudhastyawan/QuakeSee/archive/refs/heads/main.zip)/Clone this repository to your computer drive
-7. If in a Zip file, extract the contents in one folder
-8. Locate Anaconda prompt/Terminal to the extracted folder by command `cd "locate/to/folder"` (In Windows, for going to a different drive, run the drive name as a command in CMD e.g. `F:` or run `cd /d "F:/locate/to/folder"`)
-9. Run command `pip install -r requirements.txt`
-11. Run command `python quakesee.py`
-12. Enjoy!
+Once installed, you can launch the application directly from your terminal by simply typing:
+```bash
+quakesee
+```
 
 ### Tips
 Change some paths in `user.yaml` file to avoid the warning messages in the console after opening the program. If you do not have "OpenQuake" python, then choose another python path in general.
@@ -37,13 +45,12 @@ Change some paths in `user.yaml` file to avoid the warning messages in the conso
 Before using the **Create OQ Inputs** feature, we need to:
 1. Install OpenQuake ([download](https://downloads.openquake.org/pkgs/windows/oq-engine/))
 2. Open `user.yaml` file, change the contents:
-```
+```yaml
 path_OQ:
   python: "path/to/openquake/python/executable/file"
   outputdir: "/path/to/output/destination/file/directory"
 ```
-3. Run command `python quakesee.py` (see detail instruction)
-4. Enjoy!
+3. Restart the `quakesee` application.
 
 ## To-Do Lists
 - [x] Expand to a bigger software
@@ -62,19 +69,19 @@ path_OQ:
 
 ## Gallery
 <p align="center">
-	<img src="/imgs/QuakeSee - 1.png" alt="QuakeSee - 1" width="800"/>
+	<img src="src/quakesee/imgs/QuakeSee - 1.png" alt="QuakeSee - 1" width="800"/>
 	<br>
 	QuakeSee - 1
 	<br>
-	<img src="/imgs/QuakeSee - 2.png" alt="QuakeSee - 2" width="800"/>
+	<img src="src/quakesee/imgs/QuakeSee - 2.png" alt="QuakeSee - 2" width="800"/>
 	<br>
 	QuakeSee - 2
 	<br>
-	<img src="/imgs/QuakeSee - 3.png" alt="QuakeSee - 3" width="800"/>
+	<img src="src/quakesee/imgs/QuakeSee - 3.png" alt="QuakeSee - 3" width="800"/>
 	<br>
 	QuakeSee - 3
 	<br>
-	<img src="/imgs/QuakeSee - 4.png" alt="QuakeSee - 4" width="800"/>
+	<img src="src/quakesee/imgs/QuakeSee - 4.png" alt="QuakeSee - 4" width="800"/>
 	<br>
 	QuakeSee - 4
 	<br>	
