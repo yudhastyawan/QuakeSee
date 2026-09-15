@@ -1,6 +1,6 @@
 package:
   name: quakesee
-  version: "1.0.1"
+  version: "1.0.2"
 
 source:
   path: ..
@@ -34,6 +34,7 @@ requirements:
     - pyyaml ==6.0
     - sympy ==1.12
     - fiona <1.9.0
+    - setuptools <70
 
 about:
   home: "https://github.com/yudhastyawan/QuakeSee"

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='quakesee',
-    version='1.0.1',
+    version='1.0.2',
     description='QuakeSee - Earthquake Analysis Tool',
     author='Yudha Styawan',
     packages=find_packages(where='src'),
